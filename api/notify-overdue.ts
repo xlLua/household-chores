@@ -110,6 +110,18 @@ export async function GET(request: Request): Promise<Response> {
   let sent = 0
   const skipped: string[] = []
   for (const person of recipients) {
+    const { data: subs, error: subError } = await db
+      .from('push_subscriptions')
+      .select('id, endpoint, p256dh, auth')
+      .eq('user_id', person.user_id)
+    if (subError) throw subError
+    // Checked before claiming today's slot, so turning notifications on later
+    // in the day still gets that day's reminder on the next run.
+    if (!subs || subs.length === 0) {
+      skipped.push(`${person.display_name}: notifications off`)
+      continue
+    }
+
     // Claim today's slot first; a duplicate cron run finds it taken.
     const { data: claimed, error: claimError } = await db
       .from('push_log')
@@ -121,14 +133,7 @@ export async function GET(request: Request): Promise<Response> {
       continue
     }
 
-    const { data: subs, error: subError } = await db
-      .from('push_subscriptions')
-      .select('id, endpoint, p256dh, auth')
-      .eq('user_id', person.user_id)
-    if (subError) throw subError
-    if (!subs || subs.length === 0) skipped.push(`${person.display_name}: notifications off`)
-
-    for (const sub of subs ?? []) {
+    for (const sub of subs) {
       try {
         await webpush.sendNotification(
           { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
