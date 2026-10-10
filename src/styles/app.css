@@ -1,0 +1,496 @@
+/* ===========================================================================
+   Atelier — component styles. Tokens only; no raw hex below this line.
+   =========================================================================== */
+
+/* --- shell ---------------------------------------------------------------- */
+
+.app {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  padding: calc(var(--safe-top) + 1.125rem) var(--gutter) 0.625rem;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.topbar h1 {
+  font-size: var(--t-hero);
+  font-style: italic;
+  font-weight: 400;
+}
+.topbar__sub {
+  font-size: var(--t-small);
+  color: var(--text-muted);
+  margin-top: 0.1rem;
+}
+
+.page {
+  flex: 1;
+  width: 100%;
+  max-width: 34rem;
+  margin: 0 auto;
+  padding: 0 var(--gutter)
+    calc(var(--nav-h) + var(--safe-bottom) + 1.5rem);
+}
+
+.avatar {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  border: 1px solid var(--rule-strong);
+  object-fit: cover;
+  background: var(--bg);
+}
+
+/* --- bottom tab bar ------------------------------------------------------- */
+
+.nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  /* The safe-area padding is why the bar clears the iPhone home indicator
+     instead of sitting under it. Needs viewport-fit=cover in index.html. */
+  height: calc(var(--nav-h) + var(--safe-bottom));
+  padding-bottom: var(--safe-bottom);
+  background: color-mix(in srgb, var(--bg-raised) 92%, transparent);
+  backdrop-filter: blur(12px) saturate(1.1);
+  border-top: 1px solid var(--rule);
+}
+
+.nav__tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  color: var(--text-muted);
+  font-size: var(--t-micro);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+.nav__tab[aria-current='page'] { color: var(--text); }
+/* A small gold bead marks the active tab -- ornament that carries meaning. */
+.nav__tab[aria-current='page']::before {
+  content: '';
+  position: absolute;
+  top: 0.4rem;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--gold);
+}
+.nav__tab { position: relative; }
+
+/* --- chore card ("grimoire entry") ---------------------------------------- */
+
+.cards { display: flex; flex-direction: column; gap: 0.625rem; }
+
+.card {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.875rem;
+  background: var(--bg-raised);
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius);
+  box-shadow: inset 0 0 0 1px var(--bg-raised), inset 0 0 0 2px var(--rule),
+    var(--shadow-page);
+  padding: 0.875rem 1rem;
+  transition: opacity 0.3s ease, border-color 0.2s ease;
+}
+
+/* Overdue carries BOTH a colour and a weight change -- colour alone fails for
+   colourblind roommates, and this is the one state that must not be missed. */
+.card--overdue { border-color: var(--rose); }
+.card--overdue .card__title { font-weight: 700; }
+.card--overdue .card__meta { color: var(--overdue); font-weight: 700; }
+
+.card--done { opacity: 0.55; }
+.card--done .card__title { text-decoration: line-through; text-decoration-thickness: 1px; }
+
+.card--stamping { border-color: var(--gold); }
+
+.card__glyph {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  color: var(--text-muted);
+  border: 1px solid var(--rule);
+  background: color-mix(in srgb, var(--gold) 7%, transparent);
+  flex-shrink: 0;
+}
+.card--overdue .card__glyph { color: var(--overdue); border-color: var(--rose); }
+
+.card__body { min-width: 0; }
+.card__title {
+  font-family: var(--font-display);
+  font-size: var(--t-title);
+  font-weight: 600;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+.card__meta {
+  font-size: var(--t-small);
+  color: var(--text-muted);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.5rem;
+  margin-top: 0.15rem;
+}
+.card__notes {
+  font-size: var(--t-small);
+  color: var(--text-muted);
+  margin-top: 0.3rem;
+}
+
+.points {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--gold-deep);
+  font-variant-numeric: tabular-nums;
+}
+
+.card__action {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  border: 1.5px solid var(--rule-strong);
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition: transform 0.12s ease, border-color 0.15s ease, color 0.15s ease,
+    background-color 0.15s ease;
+}
+.card__action:active { transform: scale(0.9); }
+.card__action:hover { border-color: var(--sage); color: var(--done); }
+.card__action--done {
+  border-color: var(--sage-deep);
+  background: var(--sage-deep);
+  color: var(--on-fill);
+}
+
+/* --- the sigil ------------------------------------------------------------ */
+
+.sigil {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  z-index: 2;
+  animation: sigil-fade 1500ms ease-out forwards;
+}
+.sigil__svg { width: 5.5rem; height: 5.5rem; overflow: visible; }
+
+.sigil__ring,
+.sigil__runes path,
+.sigil__check {
+  fill: none;
+  stroke: var(--gold);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.4;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+}
+.sigil__ring { animation: ink 520ms cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+.sigil__ring--inner {
+  stroke-width: 1.3;
+  opacity: 0.7;
+  animation: ink 520ms cubic-bezier(0.4, 0, 0.2, 1) 90ms forwards;
+}
+.sigil__runes path {
+  stroke-width: 1.8;
+  animation: ink 240ms ease-out 400ms forwards;
+}
+.sigil__check {
+  stroke-width: 3.2;
+  animation: ink 280ms ease-out 500ms forwards;
+}
+
+@keyframes ink { to { stroke-dashoffset: 0; } }
+@keyframes sigil-fade {
+  0%, 68% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* --- section headings ----------------------------------------------------- */
+
+.section { margin-top: 1.5rem; }
+.section:first-child { margin-top: 0.5rem; }
+.section__head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.625rem;
+}
+.section__head .label { white-space: nowrap; }
+.section__head::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, var(--rule), transparent);
+}
+.section__count {
+  font-family: var(--font-display);
+  color: var(--gold-deep);
+  font-weight: 700;
+}
+
+/* --- leaderboard ---------------------------------------------------------- */
+
+.scores { display: flex; flex-direction: column; gap: 0.25rem; }
+
+.score {
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, auto) 1fr auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0.25rem;
+  border-bottom: 1px solid var(--rule);
+}
+.score:last-child { border-bottom: none; }
+
+.score__rank {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--rule-strong);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+/* First place is marked in gold AND with a laurel glyph -- the gold is a
+   status, carried alongside an icon, never colour on its own. */
+.score--lead .score__rank { color: var(--gold-deep); }
+.score__laurel { color: var(--gold-deep); flex-shrink: 0; }
+
+.score__name { font-weight: 600; overflow-wrap: anywhere; }
+.score__sub { font-size: var(--t-small); color: var(--text-muted); }
+
+/* Magnitude across one measure, so every bar is the SAME hue. Colouring the
+   leader's bar differently would encode rank in colour -- which repaints the
+   survivors as soon as the month filter changes anyone's position. */
+.score__bar {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--chart-track);
+  overflow: hidden;
+  min-width: 2.5rem;
+}
+.score__bar > span {
+  display: block;
+  height: 100%;
+  /* Square at the baseline, 4px rounded at the data end. */
+  border-radius: 0 4px 4px 0;
+  background: var(--chart-bar);
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.score__points {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.month-switch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+.month-switch__label {
+  font-family: var(--font-display);
+  font-size: var(--t-title);
+  font-style: italic;
+}
+.icon-btn {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  border: 1px solid var(--rule-strong);
+  color: var(--text-muted);
+}
+.icon-btn:disabled { opacity: 0.35; }
+
+/* --- forms ---------------------------------------------------------------- */
+
+.field { display: block; margin-bottom: 0.875rem; }
+.field > .label { display: block; margin-bottom: 0.3rem; }
+
+.input,
+.select,
+.textarea {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius);
+  padding: 0.7rem 0.75rem;
+  /* 16px minimum, or iOS Safari zooms the whole page on focus. */
+  font-size: 1rem;
+}
+.textarea { resize: vertical; min-height: 4.5rem; }
+
+.row { display: flex; gap: 0.625rem; }
+.row > * { flex: 1; min-width: 0; }
+
+.glyph-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.glyph-picker button {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  border: 1px solid var(--rule);
+  color: var(--text-muted);
+}
+.glyph-picker button[aria-pressed='true'] {
+  border-color: var(--gold);
+  color: var(--gold-deep);
+  background: color-mix(in srgb, var(--gold) 12%, transparent);
+}
+
+/* --- empty states: where the whimsy costs nothing ------------------------- */
+
+.empty {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  color: var(--text-muted);
+}
+.empty__art { color: var(--rule-strong); margin: 0 auto 0.875rem; display: block; }
+.empty__title {
+  font-family: var(--font-display);
+  font-size: var(--t-title);
+  font-style: italic;
+  color: var(--text);
+  margin-bottom: 0.25rem;
+}
+.empty__body { font-size: var(--t-small); max-width: 22rem; margin: 0 auto; }
+
+/* --- sign-in -------------------------------------------------------------- */
+
+.signin {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: var(--gutter);
+}
+.signin__card {
+  width: 100%;
+  max-width: 21rem;
+  text-align: center;
+  padding: 2rem 1.5rem;
+  position: relative;
+}
+.signin__title {
+  font-size: 2rem;
+  font-style: italic;
+  font-weight: 400;
+  margin-bottom: 0.35rem;
+}
+.signin__body {
+  font-size: var(--t-small);
+  color: var(--text-muted);
+  margin: 0 0 1.5rem;
+}
+/* Google's own button, in an atelier frame. Their branding rules want their
+   button rendered as-is, so the surround does the theming instead. */
+.signin__google { display: grid; place-items: center; min-height: 2.75rem; }
+.signin__fallback {
+  margin-top: 1rem;
+  font-size: var(--t-small);
+  color: var(--text-muted);
+}
+.signin__fallback button {
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: 600;
+}
+
+/* Corner filigree: on the frame's edges, never behind text. */
+.flourish {
+  position: absolute;
+  width: 2.25rem;
+  height: 2.25rem;
+  color: var(--gold);
+  opacity: 0.45;
+  pointer-events: none;
+}
+.flourish--tl { top: 0.5rem; left: 0.5rem; }
+.flourish--br { bottom: 0.5rem; right: 0.5rem; rotate: 180deg; }
+
+/* --- misc ----------------------------------------------------------------- */
+
+.banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.875rem;
+  margin: 0 0 0.875rem;
+  border-radius: var(--radius);
+  font-size: var(--t-small);
+  border: 1px solid var(--rule-strong);
+  background: var(--bg-raised);
+}
+.banner--warn { border-color: var(--rose); color: var(--overdue); }
+.banner--info { border-color: var(--periwinkle); color: var(--upcoming); }
+
+.toast {
+  position: fixed;
+  left: 50%;
+  translate: -50% 0;
+  bottom: calc(var(--nav-h) + var(--safe-bottom) + 1rem);
+  z-index: 60;
+  max-width: calc(100vw - 2rem);
+  padding: 0.7rem 1.125rem;
+  border-radius: 999px;
+  background: var(--text);
+  color: var(--bg);
+  font-size: var(--t-small);
+  font-weight: 600;
+  box-shadow: var(--shadow-page);
+  animation: toast-in 180ms ease-out;
+}
+@keyframes toast-in {
+  from { opacity: 0; translate: -50% 8px; }
+  to { opacity: 1; translate: -50% 0; }
+}
+
+.sheet-stack { display: flex; flex-direction: column; gap: 0.625rem; }
+
+.spinner {
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid var(--rule);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 700ms linear infinite;
+}
+@keyframes spin { to { rotate: 360deg; } }
+
+.center-pad { display: grid; place-items: center; padding: 3rem 1rem; }

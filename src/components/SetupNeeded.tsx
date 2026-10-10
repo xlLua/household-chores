@@ -1,0 +1,35 @@
+/** The most likely first-run failure, so it says exactly what is missing
+ *  rather than rendering a blank page. */
+export function SetupNeeded() {
+  return (
+    <main className="signin">
+      <div className="sheet signin__card" style={{ textAlign: 'left' }}>
+        <h1 className="signin__title" style={{ textAlign: 'center' }}>
+          Almost there
+        </h1>
+        <p className="signin__body" style={{ textAlign: 'center' }}>
+          The atelier has no keys yet.
+        </p>
+        <p style={{ fontSize: 'var(--t-small)', color: 'var(--text-muted)' }}>
+          Copy <code>.env.example</code> to <code>.env.local</code> and fill in:
+        </p>
+        <ul
+          style={{
+            fontSize: 'var(--t-small)',
+            lineHeight: 1.9,
+            paddingLeft: '1.1rem',
+            color: 'var(--text-muted)',
+          }}
+        >
+          <li><code>VITE_SUPABASE_URL</code></li>
+          <li><code>VITE_SUPABASE_ANON_KEY</code></li>
+          <li><code>VITE_GOOGLE_CLIENT_ID</code></li>
+        </ul>
+        <p style={{ fontSize: 'var(--t-small)', color: 'var(--text-muted)' }}>
+          Then restart the dev server. See <code>README.md</code> for where each
+          value comes from.
+        </p>
+      </div>
+    </main>
+  )
+}
