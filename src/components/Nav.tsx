@@ -5,7 +5,7 @@ const TABS = [
   { to: '/', label: 'Vandaag', Icon: Sparkles },
   { to: '/chores', label: 'Taken', Icon: ScrollText },
   { to: '/history', label: 'Historie', Icon: History },
-  { to: '/scores', label: 'Scores', Icon: Trophy },
+  { to: '/scores', label: 'Scorebord', Icon: Trophy },
   { to: '/settings', label: 'Instellingen', Icon: Settings },
 ]
 

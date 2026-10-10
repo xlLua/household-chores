@@ -60,7 +60,7 @@ export function Leaderboard() {
       })
       .catch((e) => {
         console.error(e)
-        if (!cancelled) setError('Scores laden is mislukt.')
+        if (!cancelled) setError('Scorebord laden is mislukt.')
       })
     return () => {
       cancelled = true
@@ -93,7 +93,7 @@ export function Leaderboard() {
   return (
     <>
       <PageHeader
-        title="Scores"
+        title="Scorebord"
         status={
           scores === null
             ? null
@@ -158,7 +158,7 @@ export function Leaderboard() {
                       {index + 1}
                     </span>
 
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', minWidth: 0 }}>
+                    <span className="score__who">
                       {lead && <Laurel />}
                       <Avatar profile={row.profile} size={30} />
                       <span style={{ minWidth: 0 }}>
