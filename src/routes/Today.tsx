@@ -2,7 +2,13 @@ import { useEffect, useMemo, useState } from 'react'
 import { WifiOff } from 'lucide-react'
 import { useBoardContext } from '../hooks/BoardProvider'
 import { useAuth } from '../lib/auth'
-import { bucketOf, completeInstance, pointsLabel, uncompleteInstance } from '../lib/chores'
+import {
+  bucketOf,
+  checkLeader,
+  completeInstance,
+  pointsLabel,
+  uncompleteInstance,
+} from '../lib/chores'
 import { ChoreCard } from '../components/ChoreCard'
 import { Empty } from '../components/Empty'
 import { PageHeader } from '../components/PageHeader'
@@ -52,6 +58,7 @@ export function Today() {
         setToast('Iemand anders was je voor.')
       } else {
         setToast(`+${pointsLabel(instance.chore.points)}`)
+        checkLeader()
       }
       await reload()
     } catch (e) {
@@ -68,6 +75,7 @@ export function Today() {
     setBusy(instance.id)
     try {
       await uncompleteInstance(instance)
+      checkLeader(true)
       await reload()
     } catch (e) {
       console.error(e)

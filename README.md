@@ -137,6 +137,13 @@ points this month each get one notification listing what's overdue. `push_log`
 stops a duplicate cron run from notifying twice in a day; subscriptions that come
 back 404/410 are deleted.
 
+**New leader.** After every completion the app POSTs to `api/leader-check.ts`
+(with the user's access token; must be a household member). The server recomputes
+this month's standings and compares the leader with `leader_state`. When someone
+else is now strictly ahead, everyone gets a notification ("Je staat bovenaan" /
+"Nieuwe koploper: …" / "… heeft je ingehaald"). Ties change nothing, the first
+leader of a month is recorded silently, and an undo resyncs without announcing.
+
 Each person turns it on per phone in **Instellingen → Meldingen**, which stores the
 subscription in `push_subscriptions`.
 

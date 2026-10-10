@@ -204,6 +204,31 @@ export async function unarchiveChore(id: string): Promise<void> {
   await ensureInstances()
 }
 
+// --- leader notifications --------------------------------------------------
+
+/**
+ * Tells the server the scores may have changed; it decides whether the lead
+ * changed hands and notifies everyone (api/leader-check.ts). Fire-and-forget:
+ * never blocks or fails the completion itself. `silent` after an undo resyncs
+ * without announcing anything.
+ */
+export function checkLeader(silent = false): void {
+  void (async () => {
+    try {
+      const { data } = await supabase.auth.getSession()
+      const token = data.session?.access_token
+      if (!token) return
+      await fetch('/api/leader-check', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ silent }),
+      })
+    } catch {
+      // Offline or not deployed (local dev has no /api): nothing to announce.
+    }
+  })()
+}
+
 // --- history ---------------------------------------------------------------
 
 /** Everything completed in the last `days` days, newest first. Archived

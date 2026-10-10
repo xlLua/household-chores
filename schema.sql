@@ -183,3 +183,14 @@ create table if not exists push_log (
 );
 
 alter table push_log enable row level security;
+
+-- Who led the scoreboard last, per month (yyyy-MM, Europe/Amsterdam), so
+-- api/leader-check.ts can tell when the lead changes hands. Server-only:
+-- RLS on with no policies.
+create table if not exists leader_state (
+  month      text primary key check (month ~ '^\d{4}-\d{2}$'),
+  user_id    uuid not null references auth.users (id) on delete cascade,
+  updated_at timestamptz not null default now()
+);
+create index if not exists leader_state_user_idx on leader_state (user_id);
+alter table leader_state enable row level security;

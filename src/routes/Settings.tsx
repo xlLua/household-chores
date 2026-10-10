@@ -197,7 +197,8 @@ function NotificationsSection() {
       <div className="sheet">
         <p style={{ margin: '0 0 0.75rem', fontSize: 'var(--t-small)', color: 'var(--text-muted)' }}>
           Is er een taak te laat, dan krijgen de twee huisgenoten met de minste punten van deze
-          maand elke ochtend een melding.
+          maand elke ochtend een melding. En iedereen krijgt een melding als er een nieuwe
+          koploper is op het scorebord.
         </p>
         {canToggle && (
           <button
