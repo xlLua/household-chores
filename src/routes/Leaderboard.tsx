@@ -2,10 +2,11 @@ import { useEffect, useMemo, useState } from 'react'
 import { addMonths, format, isSameMonth, startOfMonth } from 'date-fns'
 import { nl } from 'date-fns/locale'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { fetchScores, type Score } from '../lib/chores'
+import { fetchScores, pointsLabel, type Score } from '../lib/chores'
 import { useBoardContext } from '../hooks/BoardProvider'
 import { useAuth } from '../lib/auth'
 import { Empty } from '../components/Empty'
+import { PageHeader } from '../components/PageHeader'
 
 /** First place. Gold always travels with this mark, never on its own. */
 function Laurel() {
@@ -87,12 +88,16 @@ export function Leaderboard() {
 
   return (
     <>
-      <header className="topbar">
-        <div>
-          <h1>Scores</h1>
-          <p className="topbar__sub">Wie deze maand de meeste punten heeft.</p>
-        </div>
-      </header>
+      <PageHeader
+        title="Scores"
+        status={
+          scores === null
+            ? null
+            : atCurrentMonth
+              ? `${pointsLabel(total)} deze maand`
+              : `${pointsLabel(total)} in ${format(month, 'MMMM', { locale: nl })}`
+        }
+      />
 
       <main className="page">
         <div className="month-switch">
@@ -189,7 +194,7 @@ export function Leaderboard() {
                 color: 'var(--text-muted)',
               }}
             >
-              {total} punten in totaal deze maand
+              {pointsLabel(total)} in totaal deze maand
             </p>
           </>
         )}

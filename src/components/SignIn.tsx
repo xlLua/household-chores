@@ -18,7 +18,8 @@ export function SignIn() {
         <Flourish className="flourish flourish--tl" />
         <Flourish className="flourish flourish--br" />
 
-        <h1 className="signin__title">Atelier</h1>
+        <h1 className="signin__title">Onder één Hoedje</h1>
+        <p className="signin__family">Van Rijswijck</p>
         <p className="signin__body">
           Huishoudtaken voor het appartement.
           <br />

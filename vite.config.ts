@@ -17,8 +17,8 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
       },
       manifest: {
-        name: 'Atelier — Huishoudtaken',
-        short_name: 'Atelier',
+        name: 'Onder één Hoedje — Van Rijswijck',
+        short_name: 'Onder één Hoedje',
         description: 'Huishoudtaken voor het appartement.',
         lang: 'nl',
         start_url: '/',

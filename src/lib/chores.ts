@@ -244,6 +244,8 @@ export async function fetchScores(monthStart: Date): Promise<Score[]> {
 
 // --- helpers used by the UI ------------------------------------------------
 
+export const pointsLabel = (n: number) => (n === 1 ? '1 punt' : `${n} punten`)
+
 export type DueBucket = 'overdue' | 'today' | 'upcoming'
 
 export function bucketOf(instance: ChoreInstance, today = startOfToday()): DueBucket {

@@ -1,5 +1,5 @@
 /* ===========================================================================
-   Atelier — design tokens
+   Onder één Hoedje — design tokens
    Whimsical cottagecore / Witch Hat Atelier: ink on parchment by day,
    candlelight on deep blue by night.
 
@@ -42,11 +42,17 @@
   --accent:         var(--gold);
 
   /* -- type ----------------------------------------------------------- */
-  --font-display: 'Cormorant Garamond', 'Hoefler Text', Georgia, serif;
+  /* Three voices, each with one job: the script ONLY for page titles (it is
+     illegible small), the serif for chore names, the sans for everything else.
+     All three are self-hosted (src/main.tsx) so the service worker precaches
+     them and the installed app never falls back offline. */
+  --font-script: 'Monsieur La Doulaise', 'Snell Roundhand', cursive;
+  --font-serif: 'EB Garamond', 'Hoefler Text', Georgia, serif;
   --font-body: 'Nunito Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
 
-  --t-hero:  2.25rem;  /* page titles, leaderboard numerals */
-  --t-title: 1.375rem;
+  --t-script: 3.5rem;  /* page titles -- the script's hairlines need the size */
+  --t-hero:  2.25rem;
+  --t-title: 1.1875rem; /* chore names in the serif */
   --t-body:  0.9375rem; /* 15px -- the floor for body on a phone */
   --t-small: 0.8125rem;
   --t-micro: 0.6875rem; /* uppercase labels, letterspaced */
@@ -63,6 +69,9 @@
 
   --shadow-page: 0 1px 2px rgb(58 48 39 / 0.05), 0 6px 18px rgb(58 48 39 / 0.06);
   --grain-opacity: 0.040;
+  /* The per-tab line drawing behind the page. Stroked in --text at this
+     opacity; checked so muted text over a stroke still clears AA. */
+  --backdrop-opacity: 0.07;
 
   color-scheme: light;
 }
@@ -95,6 +104,10 @@
 
     --shadow-page: 0 1px 2px rgb(0 0 0 / 0.25), 0 8px 22px rgb(0 0 0 / 0.30);
     --grain-opacity: 0.055;
+    /* Light lines on dark read stronger than dark on light, so less. */
+    --backdrop-opacity: 0.055;
+    /* Pale hairlines on a dark ground thin out; a touch more size helps. */
+    --t-script: 3.75rem;
 
     color-scheme: dark;
   }
@@ -121,8 +134,8 @@ body {
 }
 
 h1, h2, h3 {
-  font-family: var(--font-display);
-  font-weight: 600;
+  font-family: var(--font-body);
+  font-weight: 700;
   line-height: 1.15;
   margin: 0;
   letter-spacing: 0.01em;

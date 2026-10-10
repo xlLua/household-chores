@@ -3,7 +3,7 @@ import { nl } from 'date-fns/locale'
 import { Check, Undo2 } from 'lucide-react'
 import { Glyph } from './glyphs'
 import { Sigil } from './Sigil'
-import { bucketOf } from '../lib/chores'
+import { bucketOf, pointsLabel } from '../lib/chores'
 import type { InstanceWithChore, Profile } from '../lib/types'
 import { recurrenceLabel } from '../lib/recurrence'
 
@@ -70,12 +70,12 @@ export function ChoreCard({
           ) : (
             <>
               <span>{dueText(instance.due_date)}</span>
-              <span aria-hidden="true">·</span>
+              <span className="sep" aria-hidden="true">·</span>
               <span>{recurrenceLabel(instance.chore)}</span>
             </>
           )}
-          <span aria-hidden="true">·</span>
-          <span className="points">{instance.chore.points} punten</span>
+          <span className="sep" aria-hidden="true">·</span>
+          <span className="points">{pointsLabel(instance.chore.points)}</span>
         </p>
         {instance.chore.notes && !done && (
           <p className="card__notes">{instance.chore.notes}</p>

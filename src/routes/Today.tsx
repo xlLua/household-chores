@@ -2,15 +2,16 @@ import { useEffect, useMemo, useState } from 'react'
 import { WifiOff } from 'lucide-react'
 import { useBoardContext } from '../hooks/BoardProvider'
 import { useAuth } from '../lib/auth'
-import { bucketOf, completeInstance, uncompleteInstance } from '../lib/chores'
+import { bucketOf, completeInstance, pointsLabel, uncompleteInstance } from '../lib/chores'
 import { ChoreCard } from '../components/ChoreCard'
 import { Empty } from '../components/Empty'
+import { PageHeader } from '../components/PageHeader'
 import type { InstanceWithChore, Profile } from '../lib/types'
 import { isToday, parseISO } from 'date-fns'
 
 export function Today() {
   const { instances, profiles, loading, error, online, reload } = useBoardContext()
-  const { session, profile } = useAuth()
+  const { session } = useAuth()
   const [stamping, setStamping] = useState<string | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
@@ -50,7 +51,7 @@ export function Today() {
         setStamping(null)
         setToast('Iemand anders was je voor.')
       } else {
-        setToast(`+${instance.chore.points} punten`)
+        setToast(`+${pointsLabel(instance.chore.points)}`)
       }
       await reload()
     } catch (e) {
@@ -76,25 +77,21 @@ export function Today() {
     }
   }
 
-  const hour = new Date().getHours()
-  const timeOfDay = hour < 12 ? 'Goedemorgen' : hour < 18 ? 'Goedemiddag' : 'Goedenavond'
-  const firstName = profile?.display_name?.split(' ')[0]
+  // Progress counts what was due by today; "Binnenkort" doesn't count against it.
+  const dueCount = groups.overdue.length + groups.today.length + groups.doneToday.length
+  const doneCount = groups.doneToday.length
   const nothingOpen =
     groups.overdue.length === 0 && groups.today.length === 0 && groups.upcoming.length === 0
 
   return (
     <>
-      <header className="topbar">
-        <div>
-          <h1>Vandaag</h1>
-          <p className="topbar__sub">
-            {firstName ? `${timeOfDay}, ${firstName}.` : 'Huishoudtaken'}
-          </p>
-        </div>
-        {profile?.avatar_url && (
-          <img className="avatar" src={profile.avatar_url} alt="" referrerPolicy="no-referrer" />
-        )}
-      </header>
+      <PageHeader
+        title="Vandaag"
+        status={
+          loading ? null : dueCount === 0 ? 'niets te doen' : `${doneCount} van ${dueCount} gedaan`
+        }
+        progress={loading || dueCount === 0 ? null : doneCount / dueCount}
+      />
 
       <main className="page">
         {!online && (

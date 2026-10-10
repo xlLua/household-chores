@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 
 /** The hanging-broom drawing for "nothing to do" -- the one place where the
  *  whimsy costs nothing and lands best. */
-function TidyAtelier() {
+function TidyBroom() {
   return (
     <svg
       viewBox="0 0 120 90"
@@ -45,7 +45,7 @@ export function Empty({
 }) {
   return (
     <div className="empty">
-      {art && <TidyAtelier />}
+      {art && <TidyBroom />}
       <p className="empty__title">{title}</p>
       {body && <p className="empty__body">{body}</p>}
       {children}

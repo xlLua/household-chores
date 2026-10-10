@@ -1,6 +1,7 @@
 import { LogOut, Share, Smartphone } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { useBoardContext } from '../hooks/BoardProvider'
+import { PageHeader } from '../components/PageHeader'
 
 /** iOS Safari never fires beforeinstallprompt, so the only way to get the app
  *  onto an iPhone home screen is to tell people how. */
@@ -22,12 +23,7 @@ export function SettingsPage() {
 
   return (
     <>
-      <header className="topbar">
-        <div>
-          <h1>Instellingen</h1>
-          <p className="topbar__sub">Je account en de app.</p>
-        </div>
-      </header>
+      <PageHeader title="Instellingen" />
 
       <main className="page">
         <section className="section">
@@ -68,7 +64,7 @@ export function SettingsPage() {
             <div className="sheet">
               <p style={{ margin: '0 0 0.5rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                 <Smartphone size={17} aria-hidden="true" />
-                <strong>Zet Atelier op je beginscherm</strong>
+                <strong>Zet Onder één Hoedje op je beginscherm</strong>
               </p>
               <p style={{ margin: 0, fontSize: 'var(--t-small)', color: 'var(--text-muted)' }}>
                 {isIos() ? (
@@ -117,7 +113,7 @@ export function SettingsPage() {
             color: 'var(--rule-strong)',
           }}
         >
-          Atelier · v0.1
+          Onder één Hoedje · v0.1
         </p>
       </main>
     </>

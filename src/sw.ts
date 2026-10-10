@@ -5,7 +5,6 @@ import {
   precacheAndRoute,
 } from 'workbox-precaching'
 import { NavigationRoute, registerRoute } from 'workbox-routing'
-import { StaleWhileRevalidate } from 'workbox-strategies'
 
 declare const self: ServiceWorkerGlobalScope & {
   __WB_MANIFEST: Array<{ url: string; revision: string | null }>
@@ -19,15 +18,7 @@ cleanupOutdatedCaches()
 // SPA fallback: any navigation serves the cached index.html.
 registerRoute(new NavigationRoute(createHandlerBoundToURL('index.html')))
 
-// Google Fonts: the stylesheet and the font files are on separate origins.
-registerRoute(
-  ({ url }) => url.origin === 'https://fonts.googleapis.com',
-  new StaleWhileRevalidate({ cacheName: 'atelier-font-css' }),
-)
-registerRoute(
-  ({ url }) => url.origin === 'https://fonts.gstatic.com',
-  new StaleWhileRevalidate({ cacheName: 'atelier-font-files' }),
-)
+// Fonts are self-hosted now, so they arrive in the precache above.
 
 // Deliberately NOT cached: Supabase API calls. A stale chore list that says
 // something is still open when a roommate already did it is worse than an
@@ -38,7 +29,14 @@ self.addEventListener('install', () => {
   self.skipWaiting()
 })
 self.addEventListener('activate', (event) => {
-  event.waitUntil(self.clients.claim())
+  event.waitUntil(
+    Promise.all([
+      self.clients.claim(),
+      // Left behind by the Google Fonts era; nothing reads them any more.
+      caches.delete('atelier-font-css'),
+      caches.delete('atelier-font-files'),
+    ]),
+  )
 })
 
 // ---------------------------------------------------------------------------
@@ -58,7 +56,7 @@ self.addEventListener('activate', (event) => {
 // self.addEventListener('push', (event) => {
 //   const payload = event.data?.json() ?? {}
 //   event.waitUntil(
-//     self.registration.showNotification(payload.title ?? 'Atelier', {
+//     self.registration.showNotification(payload.title ?? 'Onder één Hoedje', {
 //       body: payload.body,
 //       icon: '/icons/icon-192.png',
 //       badge: '/icons/icon-192.png',

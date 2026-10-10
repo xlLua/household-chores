@@ -4,12 +4,14 @@ import { useBoardContext } from '../hooks/BoardProvider'
 import {
   archiveChore,
   createChore,
+  pointsLabel,
   unarchiveChore,
   updateChore,
 } from '../lib/chores'
 import { recurrenceLabel } from '../lib/recurrence'
 import { ChoreForm } from '../components/ChoreForm'
 import { Empty } from '../components/Empty'
+import { PageHeader } from '../components/PageHeader'
 import { Glyph } from '../components/glyphs'
 import type { Chore, ChoreDraft } from '../lib/types'
 
@@ -69,24 +71,24 @@ export function Chores() {
 
   return (
     <>
-      <header className="topbar">
-        <div>
-          <h1>Taken</h1>
-          <p className="topbar__sub">Alle taken in huis.</p>
-        </div>
-        {mode.kind === 'none' && (
-          <button
-            type="button"
-            className="btn btn--primary"
-            onClick={() => setMode({ kind: 'new' })}
-          >
-            <Plus size={17} strokeWidth={2.2} aria-hidden="true" />
-            Toevoegen
-          </button>
-        )}
-      </header>
+      <PageHeader
+        title="Taken"
+        status={`${active.length} ${active.length === 1 ? 'actieve taak' : 'actieve taken'}`}
+      />
 
       <main className="page">
+        {mode.kind === 'none' && active.length > 0 && (
+          <div className="page__actions">
+            <button
+              type="button"
+              className="btn btn--primary"
+              onClick={() => setMode({ kind: 'new' })}
+            >
+              <Plus size={17} strokeWidth={2.2} aria-hidden="true" />
+              Toevoegen
+            </button>
+          </div>
+        )}
         {mode.kind !== 'none' && (
           <div className="section">
             <div className="section__head">
@@ -135,8 +137,8 @@ export function Chores() {
                     <h3 className="card__title">{chore.title}</h3>
                     <p className="card__meta">
                       <span>{recurrenceLabel(chore)}</span>
-                      <span aria-hidden="true">·</span>
-                      <span className="points">{chore.points} punten</span>
+                      <span className="sep" aria-hidden="true">·</span>
+                      <span className="points">{pointsLabel(chore.points)}</span>
                     </p>
                   </div>
                   <div style={{ display: 'flex', gap: '0.35rem' }}>

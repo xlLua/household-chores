@@ -9,11 +9,14 @@
       <path d="M58 256c2-30 20-52 46-58 4 28-12 50-46 58Z"/>
       <path d="M454 256c-2-30-20-52-46-58-4 28 12 50 46 58Z"/>
     </g>
-    <!-- the hat -->
-    <g stroke-width="15">
-      <path d="M186 332c8-86 34-162 60-206 5-9 14-9 19 0 29 57 51 128 61 206"/>
-      <ellipse cx="256" cy="340" rx="122" ry="30"/>
-      <path d="M198 312c38 11 78 11 116 0"/>
+    <!-- the broom: a besom leaning into the ring -->
+    <g stroke-width="15" transform="translate(14 -6) rotate(28 256 256) translate(0 -10)">
+      <path d="M256 112V262"/>
+      <path d="M233 266Q221 330 194 384Q256 406 318 384Q291 330 279 266Z"/>
+      <path d="M231 266H281M229 284H283" />
+    </g>
+    <g stroke-width="8" transform="translate(14 -6) rotate(28 256 256) translate(0 -10)">
+      <path d="M244 300L224 386M256 300V394M268 300L288 386"/>
     </g>
     <!-- stars -->
     <g stroke-width="8">
