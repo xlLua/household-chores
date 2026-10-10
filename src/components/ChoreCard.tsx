@@ -65,7 +65,7 @@ export function ChoreCard({
             <span>
               Gedaan door{' '}
               <span className="avatar-inline">
-                <Avatar profile={doer} size={18} />
+                <Avatar profile={doer} size={24} />
                 {doer?.display_name.split(' ')[0] ?? 'iemand'}
               </span>
               {instance.completed_at

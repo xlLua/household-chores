@@ -17,12 +17,19 @@ create table if not exists profiles (
   created_at   timestamptz not null default now()
 );
 
--- The avatar the person picked in Instellingen: the file name (without
+-- The person's avatar, assigned by the admin: the file name (without
 -- extension) of an image in src/assets/avatars/. Null = initials. (avatar_url
 -- is no longer filled: Google photos are never stored or shown.)
 -- Not part of the sign-in upsert, so it survives every sign-in.
 alter table profiles
   add column if not exists avatar_key text check (avatar_key is null or length(avatar_key) between 1 and 100);
+
+-- Avatars are assigned by the admin, not chosen in the app: members may only
+-- write the columns the sign-in upsert sets, so avatar_key is read-only to
+-- them (set it in the SQL editor or Table Editor instead).
+revoke insert, update on profiles from anon, authenticated;
+grant insert (user_id, display_name, avatar_url) on profiles to authenticated;
+grant update (user_id, display_name, avatar_url) on profiles to authenticated;
 
 -- The chore *definition*, including how it repeats.
 create table if not exists chores (

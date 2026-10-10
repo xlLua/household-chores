@@ -6,5 +6,6 @@ offline, so keep them small).
 
 The file name, without extension, is the avatar's id and is stored in
 `profiles.avatar_key` — renaming a file un-picks it for whoever chose it.
-Every image in this folder appears in Instellingen → Avatar after a deploy;
-no list to update.
+Avatars are assigned, not chosen in the app: set each person's
+`profiles.avatar_key` to the file name (SQL editor or Table Editor). Members
+can't change it themselves -- the column isn't writable for them.

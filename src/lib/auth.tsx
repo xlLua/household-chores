@@ -107,8 +107,6 @@ interface AuthValue {
   mountGoogleButton: (el: HTMLElement | null) => void
   signInWithRedirect: () => Promise<void>
   signOut: () => Promise<void>
-  /** Saves the avatar picked in Instellingen (null = back to the Google photo). */
-  setAvatarKey: (key: string | null) => Promise<void>
 }
 
 const AuthContext = createContext<AuthValue | null>(null)
@@ -277,19 +275,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (oauthError) setError(oauthError.message)
   }, [])
 
-  const setAvatarKey = useCallback(
-    async (key: string | null) => {
-      if (!session?.user) return
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ avatar_key: key })
-        .eq('user_id', session.user.id)
-      if (updateError) throw updateError
-      setProfile((p) => (p ? { ...p, avatar_key: key } : p))
-    },
-    [session?.user],
-  )
-
   const signOut = useCallback(async () => {
     window.google?.accounts.id.disableAutoSelect()
     await supabase.auth.signOut()
@@ -306,7 +291,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       mountGoogleButton,
       signInWithRedirect,
       signOut,
-      setAvatarKey,
     }),
     [
       session,
@@ -318,7 +302,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       mountGoogleButton,
       signInWithRedirect,
       signOut,
-      setAvatarKey,
     ],
   )
 

@@ -10,7 +10,8 @@ function initials(name: string | undefined): string {
 }
 
 /**
- * A person's avatar: the one they picked in Instellingen, else their initials.
+ * A person's avatar: the one assigned to them (profiles.avatar_key), else their
+ * initials.
  * Google profile photos are deliberately never shown (or stored). Decorative
  * -- the name is always shown next to it -- so hidden from screen readers.
  */

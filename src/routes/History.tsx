@@ -94,7 +94,7 @@ export function History() {
                       <p className="card__title">{item.chore.title}</p>
                       <p className="card__meta">
                         <span className="avatar-inline">
-                          <Avatar profile={profileOf(item.completed_by)} size={18} />
+                          <Avatar profile={profileOf(item.completed_by)} size={24} />
                           {profileOf(item.completed_by)?.display_name.split(' ')[0] ?? 'Iemand'}
                         </span>
                         <span className="sep" aria-hidden="true">·</span>

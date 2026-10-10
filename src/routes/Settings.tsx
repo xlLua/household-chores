@@ -6,7 +6,6 @@ import { getThemePreference, setThemePreference, type ThemePreference } from '..
 import { useBoardContext } from '../hooks/BoardProvider'
 import { PageHeader } from '../components/PageHeader'
 import { Avatar } from '../components/Avatar'
-import { AVATARS } from '../lib/avatars'
 
 /** iOS Safari never fires beforeinstallprompt, so the only way to get the app
  *  onto an iPhone home screen is to tell people how. */
@@ -53,7 +52,6 @@ export function SettingsPage() {
           </div>
         </section>
 
-        <AvatarSection />
         <AppearanceSection />
         <NotificationsSection />
 
@@ -220,68 +218,6 @@ function NotificationsSection() {
           <p style={{ margin: canToggle ? '0.6rem 0 0' : 0, fontSize: 'var(--t-small)', color: 'var(--text-muted)' }}>
             {PUSH_HINT[state]}
           </p>
-        )}
-        {error && <p className="banner banner--warn" style={{ marginTop: '0.75rem' }}>{error}</p>}
-      </div>
-    </section>
-  )
-}
-
-function AvatarSection() {
-  const { profile, setAvatarKey } = useAuth()
-  const { reload } = useBoardContext()
-  const [saving, setSaving] = useState<string | null>(null)
-  const [error, setError] = useState<string | null>(null)
-
-  if (AVATARS.length === 0) return null
-  const current = profile?.avatar_key ?? null
-
-  async function pick(key: string | null) {
-    if (saving || key === current) return
-    setSaving(key ?? 'google')
-    setError(null)
-    try {
-      await setAvatarKey(key)
-      // Everyone else's view picks it up on their next reload; ours, now.
-      await reload()
-    } catch (e) {
-      console.error(e)
-      setError('Opslaan is mislukt.')
-    } finally {
-      setSaving(null)
-    }
-  }
-
-  return (
-    <section className="section">
-      <div className="section__head">
-        <span className="label">Avatar</span>
-      </div>
-      <div className="sheet">
-        <div className="avatar-picker" role="radiogroup" aria-label="Avatar">
-          {AVATARS.map((a) => (
-            <button
-              key={a.key}
-              type="button"
-              role="radio"
-              aria-checked={current === a.key}
-              aria-label={a.key}
-              disabled={saving !== null}
-              onClick={() => void pick(a.key)}
-            >
-              <img src={a.url} alt="" />
-            </button>
-          ))}
-        </div>
-        {current && (
-          <button
-            type="button"
-            className="avatar-picker__reset"
-            disabled={saving !== null}
-            onClick={() => void pick(null)}
-          >
-            Geen avatar
-          </button>
         )}
         {error && <p className="banner banner--warn" style={{ marginTop: '0.75rem' }}>{error}</p>}
       </div>
