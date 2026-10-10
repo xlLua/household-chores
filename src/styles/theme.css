@@ -46,7 +46,7 @@
      illegible small), the serif for chore names, the sans for everything else.
      All three are self-hosted (src/main.tsx) so the service worker precaches
      them and the installed app never falls back offline. */
-  --font-script: 'Monsieur La Doulaise', 'Snell Roundhand', cursive;
+  --font-script: 'Fleur De Leah', 'Snell Roundhand', cursive;
   --font-serif: 'EB Garamond', 'Hoefler Text', Georgia, serif;
   --font-body: 'Nunito Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
 
