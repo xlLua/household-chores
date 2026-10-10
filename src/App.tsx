@@ -6,13 +6,16 @@ import { Nav } from './components/Nav'
 import { Backdrop, type BackdropName } from './components/Backdrop'
 import { SignIn } from './components/SignIn'
 import { SetupNeeded } from './components/SetupNeeded'
+import { NoAccess } from './components/NoAccess'
 import { Today } from './routes/Today'
 import { Chores } from './routes/Chores'
 import { Leaderboard } from './routes/Leaderboard'
+import { History } from './routes/History'
 import { SettingsPage } from './routes/Settings'
 
 const BACKDROPS: Record<string, BackdropName> = {
   '/chores': 'broom',
+  '/history': 'hourglass',
   '/scores': 'laurel',
   '/settings': 'key',
 }
@@ -25,6 +28,7 @@ function Shell() {
       <Routes>
         <Route path="/" element={<Today />} />
         <Route path="/chores" element={<Chores />} />
+        <Route path="/history" element={<History />} />
         <Route path="/scores" element={<Leaderboard />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="*" element={<Today />} />
@@ -35,9 +39,9 @@ function Shell() {
 }
 
 function Gate() {
-  const { session, loading } = useAuth()
+  const { session, member, loading } = useAuth()
 
-  if (loading) {
+  if (loading || (session && member === null)) {
     return (
       <div className="center-pad">
         <div className="spinner" role="status" aria-label="Laden" />
@@ -45,6 +49,7 @@ function Gate() {
     )
   }
   if (!session) return <SignIn />
+  if (!member) return <NoAccess />
   return (
     <BoardProvider>
       <Shell />

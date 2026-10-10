@@ -76,41 +76,42 @@
   color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* -- night: the atelier after dark. Candlelight, not a grey inversion. */
-    --bg:             #1F2430;
-    --bg-raised:      #2A3040;
-    --text:           #E8E0D0;  /* 11.8:1 */
-    --text-muted:     #A99E8C;  /*  5.9:1 */
-    --rule:           #3C4356;
-    --rule-strong:    #555E75;
+/* Dark is keyed to data-theme, not the media query, so it can be chosen in
+   Instellingen. index.html sets the attribute before first paint -- from the
+   saved choice, or from prefers-color-scheme when the choice is "Systeem". */
+:root[data-theme='dark'] {
+  /* -- night: the atelier after dark. Candlelight, not a grey inversion. */
+  --bg:             #1F2430;
+  --bg-raised:      #2A3040;
+  --text:           #E8E0D0;  /* 11.8:1 */
+  --text-muted:     #A99E8C;  /*  5.9:1 */
+  --rule:           #3C4356;
+  --rule-strong:    #555E75;
 
-    --sage:           #9DB086;
-    --sage-deep:      #8CA075;
-    --periwinkle:     #A8AEDC;
-    --periwinkle-deep:#9AA1D4;
-    --rose:           #D08E88;
-    --rose-deep:      #CE8A84;
-    --gold:           #D9B64A;  /* 7.9:1 */
-    --gold-deep:      #D9B64A;
+  --sage:           #9DB086;
+  --sage-deep:      #8CA075;
+  --periwinkle:     #A8AEDC;
+  --periwinkle-deep:#9AA1D4;
+  --rose:           #D08E88;
+  --rose-deep:      #CE8A84;
+  --gold:           #D9B64A;  /* 7.9:1 */
+  --gold-deep:      #D9B64A;
 
-    --on-fill:        #1F2430;
+  --on-fill:        #1F2430;
 
-    /* The dark band is narrower (L 0.48-0.67) -- this is re-stepped against
-       #2A3040, not a lightened version of the light-mode value. */
-    --chart-bar:      #7E9A3C;  /* validated on #2A3040, dark */
-    --chart-track:    #3C4356;
+  /* The dark band is narrower (L 0.48-0.67) -- this is re-stepped against
+     #2A3040, not a lightened version of the light-mode value. */
+  --chart-bar:      #7E9A3C;  /* validated on #2A3040, dark */
+  --chart-track:    #3C4356;
 
-    --shadow-page: 0 1px 2px rgb(0 0 0 / 0.25), 0 8px 22px rgb(0 0 0 / 0.30);
-    --grain-opacity: 0.055;
-    /* Light lines on dark read stronger than dark on light, so less. */
-    --backdrop-opacity: 0.055;
-    /* Pale hairlines on a dark ground thin out; a touch more size helps. */
-    --t-script: 3.75rem;
+  --shadow-page: 0 1px 2px rgb(0 0 0 / 0.25), 0 8px 22px rgb(0 0 0 / 0.30);
+  --grain-opacity: 0.055;
+  /* Light lines on dark read stronger than dark on light, so less. */
+  --backdrop-opacity: 0.055;
+  /* Pale hairlines on a dark ground thin out; a touch more size helps. */
+  --t-script: 3.75rem;
 
-    color-scheme: dark;
-  }
+  color-scheme: dark;
 }
 
 /* ===========================================================================

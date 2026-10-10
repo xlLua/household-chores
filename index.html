@@ -9,8 +9,20 @@
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
     <meta name="description" content="Huishoudtaken voor het appartement." />
-    <meta name="theme-color" content="#F5EEE1" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#1F2430" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#F5EEE1" />
+    <!-- Resolve light/dark before first paint so there's no flash of the wrong
+         theme. Mirrors src/lib/theme.ts -- keep the two in step. -->
+    <script>
+      (function () {
+        var pref = 'system'
+        try { pref = localStorage.getItem('theme') || 'system' } catch (e) {}
+        var dark = pref === 'dark' ||
+          (pref !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light'
+        document.querySelector('meta[name="theme-color"]')
+          .setAttribute('content', dark ? '#1F2430' : '#F5EEE1')
+      })()
+    </script>
 
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />

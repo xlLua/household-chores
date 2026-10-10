@@ -117,25 +117,38 @@ someone undoes a completion.
 
 ## Access control
 
-`schema.sql` enables RLS with one policy per table: *any signed-in user has full
-access*. There is no per-user scoping, because there is one household.
+Only the household can use the app. `schema.sql` defines `is_household_member()`,
+which checks the signed-in email (from the Supabase JWT, set from Google's verified
+address) against a fixed list, and every table's RLS policy requires it. Any other
+Google account can complete sign-in but sees nothing and can change nothing; the app
+shows a "Geen toegang" screen for them.
 
-It isn't simply disabled because the anon key ships inside the frontend bundle, so
-with RLS off anyone who found the URL could read and delete the chore list.
+To add or remove someone, edit the array in `is_household_member()` in `schema.sql`
+and run that `create or replace function` statement in the SQL editor.
 
-As written, **any Google account that reaches the URL can sign in.** To restrict it to
-your roommates, add to each policy's `using` clause:
-
-```sql
-and auth.email() in ('you@gmail.com', 'sam@gmail.com', 'alex@gmail.com')
-```
+RLS stays on regardless because the anon key ships inside the frontend bundle; with
+it off, anyone who found the URL could read and delete the chore list.
 
 ## Push notifications
 
-Not enabled. `src/sw.ts` is a real service worker (`injectManifest`, not
-`generateSW`) with the `push` and `notificationclick` handlers written and commented
-out, so switching them on is additive rather than a rebuild. Still needed: a
-`push_subscriptions` table, VAPID keys, and something to send on a schedule.
+Every morning at 07:00 UTC (09:00 summer / 08:00 winter in NL) Vercel Cron calls
+`api/notify-overdue.ts`. If any chore is overdue, the two roommates with the fewest
+points this month each get one notification listing what's overdue. `push_log`
+stops a duplicate cron run from notifying twice in a day; subscriptions that come
+back 404/410 are deleted.
+
+Each person turns it on per phone in **Instellingen → Meldingen**, which stores the
+subscription in `push_subscriptions`.
+
+Setup, once:
+1. Run the "Push notifications" section at the bottom of `schema.sql`.
+2. In Vercel, set `SUPABASE_SERVICE_ROLE_KEY` (Supabase → Project Settings → API).
+   The VAPID keys, `VAPID_SUBJECT` and `CRON_SECRET` are already set; see
+   `.env.example` for the full list. Regenerating the VAPID keys invalidates every
+   existing subscription, so everyone would have to turn notifications on again.
+
+Test it by hand: `curl -H "Authorization: Bearer $CRON_SECRET" <url>/api/notify-overdue`
+returns JSON with who was picked and how many pushes went out.
 
 **iOS caveat:** web push only works once the PWA has been added to the home screen
 (iOS 16.4+), and the permission prompt must come from a real tap.

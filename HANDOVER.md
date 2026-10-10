@@ -124,6 +124,16 @@ other open instance of that chore, which completing it had generated.
 **UI is in Dutch**, with plain wording (no "ledger"/"atelier" flavour text). Dates use
 the `nl` date-fns locale. The app is still named Atelier.
 
+### Added later the same day
+
+- **Push notifications** for overdue chores (README → Push notifications). Needs
+  `SUPABASE_SERVICE_ROLE_KEY` in Vercel and the push section of `schema.sql` run.
+- **Historie** tab: everything completed in the last 30 days, by day, who and when.
+- **Weergave** toggle (Systeem / Licht / Donker), stored per device in localStorage;
+  dark tokens are keyed to `data-theme` on `<html>`, set before first paint by an
+  inline script in `index.html` that mirrors `src/lib/theme.ts`.
+- iOS date input overflow fixed (native appearance removed).
+
 ### Fixed earlier, worth knowing about
 
 **Monthly drift.** Stepping a cursor one occurrence at a time made a chore due on the

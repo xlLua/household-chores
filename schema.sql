@@ -1,4 +1,4 @@
--- Atelier — household chores schema
+-- Onder één Hoedje — household chores schema
 -- Paste this whole file into the Supabase SQL editor (Dashboard -> SQL Editor -> New query).
 -- Safe to re-run.
 
@@ -61,33 +61,56 @@ create index if not exists chores_active_idx
   on chores (archived_at);
 
 -- ---------------------------------------------------------------------------
--- Access: one policy per table, "must be signed in", nothing per-user.
+-- Access: only the household.
 --
--- This is deliberately the simplest thing that isn't broken. It is NOT
--- multi-tenant scoping -- there is one household. The reason it isn't just
--- disabled: the anon key ships inside the frontend bundle, so with RLS off
--- anyone who finds the URL could read and delete the chore list.
+-- Any Google account can complete sign-in, but every policy below requires the
+-- signed-in email to be on this list, so anyone else sees and changes nothing.
+-- The app calls is_household_member() after sign-in to show a "no access"
+-- screen instead of an empty board. To add or remove someone, edit the array
+-- and re-run this statement.
 --
--- To restrict to specific people, add to each `using` clause:
---     and auth.email() in ('you@gmail.com','sam@gmail.com')
--- To drop access control entirely, delete this whole section.
+-- The email comes from the Supabase JWT, which Supabase sets from Google's
+-- verified address -- unlike user_metadata, users cannot edit it.
 -- ---------------------------------------------------------------------------
+
+create or replace function public.is_household_member()
+returns boolean
+language sql
+stable
+security invoker
+set search_path = ''
+as $$
+  select coalesce(lower(auth.jwt() ->> 'email'), '') = any (array[
+    'dario-verschueren@hotmail.com',
+    'leenvangeldorp@gmail.com',
+    'lenny.boel@gmail.com'
+  ])
+$$;
 
 alter table profiles        enable row level security;
 alter table chores          enable row level security;
 alter table chore_instances enable row level security;
 
 drop policy if exists "signed in" on profiles;
-create policy "signed in" on profiles
-  for all to authenticated using (true) with check (true);
+drop policy if exists "household" on profiles;
+create policy "household" on profiles
+  for all to authenticated
+  using ((select public.is_household_member()))
+  with check ((select public.is_household_member()));
 
 drop policy if exists "signed in" on chores;
-create policy "signed in" on chores
-  for all to authenticated using (true) with check (true);
+drop policy if exists "household" on chores;
+create policy "household" on chores
+  for all to authenticated
+  using ((select public.is_household_member()))
+  with check ((select public.is_household_member()));
 
 drop policy if exists "signed in" on chore_instances;
-create policy "signed in" on chore_instances
-  for all to authenticated using (true) with check (true);
+drop policy if exists "household" on chore_instances;
+create policy "household" on chore_instances
+  for all to authenticated
+  using ((select public.is_household_member()))
+  with check ((select public.is_household_member()));
 
 -- ---------------------------------------------------------------------------
 -- Realtime. Without this the tables emit no change events and phones only
@@ -105,3 +128,44 @@ begin
   exception when duplicate_object then null;
   end;
 end $$;
+
+-- ---------------------------------------------------------------------------
+-- Push notifications (added 2026-10-10)
+--
+-- One row per phone that turned on notifications in Instellingen. Unlike the
+-- tables above these ARE per-user: an endpoint lets anyone holding it push to
+-- that phone, so each person can only see and manage their own.
+--
+-- The daily sender (api/notify-overdue.ts) uses the service-role key, which
+-- bypasses RLS, to read every subscription and to write push_log.
+-- ---------------------------------------------------------------------------
+
+create table if not exists push_subscriptions (
+  id         uuid primary key default gen_random_uuid(),
+  user_id    uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  endpoint   text not null unique,
+  p256dh     text not null,
+  auth       text not null,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists push_subscriptions_user_idx on push_subscriptions (user_id);
+
+alter table push_subscriptions enable row level security;
+
+drop policy if exists "own subscriptions" on push_subscriptions;
+create policy "own subscriptions" on push_subscriptions
+  for all to authenticated
+  using (user_id = (select auth.uid()) and (select public.is_household_member()))
+  with check (user_id = (select auth.uid()) and (select public.is_household_member()));
+
+-- One row per person per day they were notified. The sender inserts here
+-- first and only sends if the insert went through, so a cron that fires twice
+-- doesn't notify twice. Server-only: RLS on with no policies.
+create table if not exists push_log (
+  user_id uuid not null references auth.users (id) on delete cascade,
+  sent_on date not null,
+  primary key (user_id, sent_on)
+);
+
+alter table push_log enable row level security;

@@ -9,7 +9,7 @@ import type { ReactNode } from 'react'
  * they stay a fine pen line however large the drawing is rendered.
  */
 
-export type BackdropName = 'sun' | 'broom' | 'laurel' | 'key'
+export type BackdropName = 'sun' | 'broom' | 'hourglass' | 'laurel' | 'key'
 
 const rad = (deg: number) => (deg * Math.PI) / 180
 const polar = (cx: number, cy: number, r: number, deg: number) =>
@@ -120,9 +120,29 @@ function Key() {
   )
 }
 
+function Hourglass() {
+  return (
+    <>
+      {/* frame: two plates and the turned posts between them */}
+      <path d="M44 22H156M52 31H148M52 169H148M44 178H156" />
+      <path d="M60 31V169M140 31V169" />
+      <circle cx="60" cy="100" r="3" />
+      <circle cx="140" cy="100" r="3" />
+      {/* the glass */}
+      <path d="M72 31C72 70 97 84 97 100C97 116 72 130 72 169" />
+      <path d="M128 31C128 70 103 84 103 100C103 116 128 130 128 169" />
+      {/* sand: what's left above, the stream, the pile below */}
+      <path d="M80 62Q100 70 120 62" />
+      <path d="M100 100V150" strokeDasharray="2 5" />
+      <path d="M78 167Q100 138 122 167" />
+    </>
+  )
+}
+
 const DRAWINGS: Record<BackdropName, () => ReactNode> = {
   sun: Sun,
   broom: BroomAndBucket,
+  hourglass: Hourglass,
   laurel: Laurel,
   key: Key,
 }

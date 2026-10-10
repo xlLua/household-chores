@@ -204,6 +204,22 @@ export async function unarchiveChore(id: string): Promise<void> {
   await ensureInstances()
 }
 
+// --- history ---------------------------------------------------------------
+
+/** Everything completed in the last `days` days, newest first. Archived
+ *  chores are included: they were still done. */
+export async function fetchHistory(days = 30): Promise<InstanceWithChore[]> {
+  const since = new Date(startOfToday().getTime() - days * 86_400_000)
+  const { data, error } = await supabase
+    .from('chore_instances')
+    .select(INSTANCE_WITH_CHORE)
+    .eq('status', 'done')
+    .gte('completed_at', since.toISOString())
+    .order('completed_at', { ascending: false })
+  if (error) throw error
+  return (data as unknown as InstanceWithChore[]).filter((i) => i.chore)
+}
+
 // --- leaderboard -----------------------------------------------------------
 
 export interface Score {

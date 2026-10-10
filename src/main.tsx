@@ -11,6 +11,9 @@ import '@fontsource/nunito-sans/latin-700.css'
 import './styles/theme.css'
 import './styles/app.css'
 import App from './App'
+import { watchSystemTheme } from './lib/theme'
+
+watchSystemTheme()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

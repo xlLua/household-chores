@@ -10,6 +10,7 @@ import {
 } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from './supabase'
+import { isDarkTheme } from './theme'
 import type { Profile } from './types'
 
 const GIS_SRC = 'https://accounts.google.com/gsi/client'
@@ -75,6 +76,9 @@ function loadGis(): Promise<void> {
 interface AuthValue {
   session: Session | null
   profile: Profile | null
+  /** Whether the signed-in account is on the household list (see
+   *  is_household_member() in schema.sql). Null while checking. */
+  member: boolean | null
   loading: boolean
   /** False when the Google script couldn't load -- the UI then offers the
    *  redirect fallback instead of an empty space where the button should be. */
@@ -90,6 +94,7 @@ const AuthContext = createContext<AuthValue | null>(null)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
+  const [member, setMember] = useState<boolean | null>(null)
   const [loading, setLoading] = useState(true)
   const [gisReady, setGisReady] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -114,6 +119,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // auth.users, so name and avatar are copied across on every sign-in.
   useEffect(() => {
     if (!session?.user) {
+      setProfile(null)
+      setMember(null)
+      return
+    }
+    let cancelled = false
+    // RLS is what actually keeps outsiders out; this only decides whether to
+    // show them a "no access" screen instead of an empty board.
+    supabase.rpc('is_household_member').then(({ data, error: rpcError }) => {
+      if (cancelled) return
+      // A failed check (usually no signal) must not lock out the installed app
+      // offline -- only a definite "no" from the database shows the screen.
+      if (rpcError) console.error('membership check failed', rpcError)
+      setMember(rpcError ? true : data === true)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [session?.user?.id])
+
+  useEffect(() => {
+    if (!session?.user || !member) {
       setProfile(null)
       return
     }
@@ -142,7 +168,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true
     }
-  }, [session?.user?.id])
+  }, [session?.user?.id, member])
 
   const handleCredential = useCallback(async (res: { credential: string }) => {
     try {
@@ -164,7 +190,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const renderInto = useCallback((el: HTMLElement) => {
     if (!window.google?.accounts?.id) return
     el.innerHTML = ''
-    const dark = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const dark = isDarkTheme()
     window.google.accounts.id.renderButton(el, {
       type: 'standard',
       theme: dark ? 'filled_black' : 'outline',
@@ -236,6 +262,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     () => ({
       session,
       profile,
+      member,
       loading,
       gisReady,
       error,
@@ -243,7 +270,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signInWithRedirect,
       signOut,
     }),
-    [session, profile, loading, gisReady, error, mountGoogleButton, signInWithRedirect, signOut],
+    [session, profile, member, loading, gisReady, error, mountGoogleButton, signInWithRedirect, signOut],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
