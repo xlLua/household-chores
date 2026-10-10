@@ -14,7 +14,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
       injectManifest: {
-        globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,webp,jpg,jpeg,avif,ico,woff2}'],
       },
       manifest: {
         name: 'Onder één Hoedje — Van Rijswijck',

@@ -3,6 +3,7 @@ import { nl } from 'date-fns/locale'
 import { Check, Undo2 } from 'lucide-react'
 import { Glyph } from './glyphs'
 import { Sigil } from './Sigil'
+import { Avatar } from './Avatar'
 import { bucketOf, pointsLabel } from '../lib/chores'
 import type { InstanceWithChore, Profile } from '../lib/types'
 import { recurrenceLabel } from '../lib/recurrence'
@@ -62,7 +63,11 @@ export function ChoreCard({
         <p className="card__meta">
           {done ? (
             <span>
-              Gedaan door {doer?.display_name ?? 'iemand'}
+              Gedaan door{' '}
+              <span className="avatar-inline">
+                <Avatar profile={doer} size={18} />
+                {doer?.display_name.split(' ')[0] ?? 'iemand'}
+              </span>
               {instance.completed_at
                 ? ` · ${format(parseISO(instance.completed_at), 'd MMM', { locale: nl })}`
                 : ''}

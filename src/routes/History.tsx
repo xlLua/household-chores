@@ -5,6 +5,7 @@ import { useBoardContext } from '../hooks/BoardProvider'
 import { fetchHistory, pointsLabel } from '../lib/chores'
 import { Empty } from '../components/Empty'
 import { Glyph } from '../components/glyphs'
+import { Avatar } from '../components/Avatar'
 import { PageHeader } from '../components/PageHeader'
 import type { InstanceWithChore } from '../lib/types'
 
@@ -55,8 +56,7 @@ export function History() {
     return groups
   }, [items])
 
-  const nameOf = (userId: string | null) =>
-    profiles.find((p) => p.user_id === userId)?.display_name.split(' ')[0] ?? 'Iemand'
+  const profileOf = (userId: string | null) => profiles.find((p) => p.user_id === userId)
 
   return (
     <>
@@ -93,7 +93,10 @@ export function History() {
                     <div className="card__body">
                       <p className="card__title">{item.chore.title}</p>
                       <p className="card__meta">
-                        <span>{nameOf(item.completed_by)}</span>
+                        <span className="avatar-inline">
+                          <Avatar profile={profileOf(item.completed_by)} size={18} />
+                          {profileOf(item.completed_by)?.display_name.split(' ')[0] ?? 'Iemand'}
+                        </span>
                         <span className="sep" aria-hidden="true">·</span>
                         <span>{format(parseISO(item.completed_at!), 'HH:mm')}</span>
                         <span className="sep" aria-hidden="true">·</span>

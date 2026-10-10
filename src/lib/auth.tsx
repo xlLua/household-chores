@@ -107,6 +107,8 @@ interface AuthValue {
   mountGoogleButton: (el: HTMLElement | null) => void
   signInWithRedirect: () => Promise<void>
   signOut: () => Promise<void>
+  /** Saves the avatar picked in Instellingen (null = back to the Google photo). */
+  setAvatarKey: (key: string | null) => Promise<void>
 }
 
 const AuthContext = createContext<AuthValue | null>(null)
@@ -169,7 +171,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       display_name: tidyName(
         meta.full_name ?? meta.name ?? session.user.email?.split('@')[0] ?? 'Huisgenoot',
       ),
-      avatar_url: meta.avatar_url ?? meta.picture ?? null,
+      // The Google photo is never shown, so it isn't stored either.
+      avatar_url: null,
     }
     let cancelled = false
     supabase
@@ -181,7 +184,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (cancelled) return
         if (upsertError) {
           console.error('profile upsert failed', upsertError)
-          setProfile({ ...row, created_at: new Date().toISOString() } as Profile)
+          setProfile({ ...row, avatar_key: null, created_at: new Date().toISOString() } as Profile)
           return
         }
         setProfile(data as Profile)
@@ -274,6 +277,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (oauthError) setError(oauthError.message)
   }, [])
 
+  const setAvatarKey = useCallback(
+    async (key: string | null) => {
+      if (!session?.user) return
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_key: key })
+        .eq('user_id', session.user.id)
+      if (updateError) throw updateError
+      setProfile((p) => (p ? { ...p, avatar_key: key } : p))
+    },
+    [session?.user],
+  )
+
   const signOut = useCallback(async () => {
     window.google?.accounts.id.disableAutoSelect()
     await supabase.auth.signOut()
@@ -290,8 +306,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       mountGoogleButton,
       signInWithRedirect,
       signOut,
+      setAvatarKey,
     }),
-    [session, profile, member, loading, gisReady, error, mountGoogleButton, signInWithRedirect, signOut],
+    [
+      session,
+      profile,
+      member,
+      loading,
+      gisReady,
+      error,
+      mountGoogleButton,
+      signInWithRedirect,
+      signOut,
+      setAvatarKey,
+    ],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

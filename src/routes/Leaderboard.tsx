@@ -6,6 +6,8 @@ import { fetchScores, pointsLabel, type Score } from '../lib/chores'
 import { useBoardContext } from '../hooks/BoardProvider'
 import { useAuth } from '../lib/auth'
 import { Empty } from '../components/Empty'
+import { Avatar } from '../components/Avatar'
+import type { Profile } from '../lib/types'
 import { PageHeader } from '../components/PageHeader'
 
 /** First place. Gold always travels with this mark, never on its own. */
@@ -36,6 +38,7 @@ function capitalize(s: string): string {
 }
 
 interface Row extends Score {
+  profile: Profile
   name: string
   isMe: boolean
 }
@@ -73,6 +76,7 @@ export function Leaderboard() {
         const found = scores.find((s) => s.userId === p.user_id)
         return {
           userId: p.user_id,
+          profile: p,
           name: p.display_name,
           points: found?.points ?? 0,
           completed: found?.completed ?? 0,
@@ -156,6 +160,7 @@ export function Leaderboard() {
 
                     <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', minWidth: 0 }}>
                       {lead && <Laurel />}
+                      <Avatar profile={row.profile} size={30} />
                       <span style={{ minWidth: 0 }}>
                         <span className="score__name">
                           {row.name}

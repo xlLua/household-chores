@@ -18,6 +18,8 @@ export interface Profile {
   user_id: string
   display_name: string
   avatar_url: string | null
+  /** Picked in Instellingen; a file name stem from src/assets/avatars/. */
+  avatar_key: string | null
   created_at: string
 }
 

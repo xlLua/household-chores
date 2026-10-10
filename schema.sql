@@ -12,10 +12,17 @@ create extension if not exists pgcrypto;
 -- cannot read auth.users. Upserted from the Google ID token on every sign-in.
 create table if not exists profiles (
   user_id      uuid primary key references auth.users (id) on delete cascade,
-  display_name text not null default 'Roommate',
+  display_name text not null default 'Huisgenoot',
   avatar_url   text,
   created_at   timestamptz not null default now()
 );
+
+-- The avatar the person picked in Instellingen: the file name (without
+-- extension) of an image in src/assets/avatars/. Null = initials. (avatar_url
+-- is no longer filled: Google photos are never stored or shown.)
+-- Not part of the sign-in upsert, so it survives every sign-in.
+alter table profiles
+  add column if not exists avatar_key text check (avatar_key is null or length(avatar_key) between 1 and 100);
 
 -- The chore *definition*, including how it repeats.
 create table if not exists chores (

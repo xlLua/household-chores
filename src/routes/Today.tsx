@@ -132,8 +132,8 @@ export function Today() {
               onUndo={onUndo}
             />
             <Section
-              title="Binnenkort"
-              items={groups.upcoming}
+              title="Vandaag gedaan"
+              items={groups.doneToday}
               profiles={profiles}
               stamping={stamping}
               busy={busy}
@@ -141,8 +141,8 @@ export function Today() {
               onUndo={onUndo}
             />
             <Section
-              title="Vandaag gedaan"
-              items={groups.doneToday}
+              title="Binnenkort"
+              items={groups.upcoming}
               profiles={profiles}
               stamping={stamping}
               busy={busy}
