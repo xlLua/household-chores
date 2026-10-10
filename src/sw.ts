@@ -15,8 +15,13 @@ declare const self: ServiceWorkerGlobalScope & {
 precacheAndRoute(self.__WB_MANIFEST)
 cleanupOutdatedCaches()
 
-// SPA fallback: any navigation serves the cached index.html.
-registerRoute(new NavigationRoute(createHandlerBoundToURL('index.html')))
+// SPA fallback: any navigation serves the cached index.html -- except the
+// static legal pages, which must load as themselves.
+registerRoute(
+  new NavigationRoute(createHandlerBoundToURL('index.html'), {
+    denylist: [/^\/privacy/, /^\/terms/],
+  }),
+)
 
 // Fonts are self-hosted now, so they arrive in the precache above.
 

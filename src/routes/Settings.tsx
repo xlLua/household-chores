@@ -115,6 +115,11 @@ export function SettingsPage() {
         >
           Onder één Hoedje · v0.1
         </p>
+        <p className="legal-links">
+          <a href="/privacy">Privacybeleid</a>
+          <span aria-hidden="true"> · </span>
+          <a href="/terms">Gebruiksvoorwaarden</a>
+        </p>
       </main>
     </>
   )

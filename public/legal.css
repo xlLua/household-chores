@@ -1,0 +1,47 @@
+/* Standalone styles for /privacy and /terms. These are plain static pages
+   (no app bundle, no sign-in) so Google's reviewers and anyone else can read
+   them; colours mirror src/styles/theme.css. */
+
+:root {
+  --bg: #F5EEE1;
+  --text: #3A3027;
+  --text-muted: #6B5E4F;
+  --rule: #D9CDB8;
+  --link: #5A6B4A;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1F2430;
+    --text: #E8E0D0;
+    --text-muted: #A99E8C;
+    --rule: #3C4356;
+    --link: #9DB086;
+    color-scheme: dark;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 1rem/1.65 system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+main { max-width: 40rem; margin: 0 auto; padding: 2.5rem 1rem 4rem; }
+h1, h2 { font-family: 'EB Garamond', Georgia, serif; font-weight: 500; line-height: 1.2; }
+h1 { font-size: 2.25rem; margin: 0.25rem 0 0.25rem; }
+h2 { font-size: 1.35rem; margin: 2rem 0 0.5rem; }
+ul { padding-left: 1.25rem; }
+li { margin-bottom: 0.4rem; }
+a { color: var(--link); }
+hr { border: none; border-top: 1px solid var(--rule); margin: 3rem 0; }
+.brand {
+  margin: 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.brand a { color: inherit; text-decoration: none; }
+.meta { margin-top: 0; color: var(--text-muted); font-size: 0.9rem; }
+.foot { margin-top: 3rem; font-size: 0.9rem; color: var(--text-muted); }

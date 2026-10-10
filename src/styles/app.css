@@ -454,6 +454,7 @@
   min-height: 100dvh;
   display: grid;
   place-items: center;
+  align-content: center;
   padding: var(--gutter);
 }
 .signin__card {
@@ -559,3 +560,13 @@
 @keyframes spin { to { rotate: 360deg; } }
 
 .center-pad { display: grid; place-items: center; padding: 3rem 1rem; }
+
+/* --- legal links (sign-in and settings) ----------------------------------- */
+
+.legal-links {
+  margin: 1rem 0 0;
+  text-align: center;
+  font-size: var(--t-small);
+  color: var(--text-muted);
+}
+.legal-links a { color: inherit; }

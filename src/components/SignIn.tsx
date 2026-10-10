@@ -43,6 +43,11 @@ export function SignIn() {
           </p>
         )}
       </div>
+      <p className="legal-links">
+        <a href="/privacy">Privacybeleid</a>
+        <span aria-hidden="true"> · </span>
+        <a href="/terms">Gebruiksvoorwaarden</a>
+      </p>
     </main>
   )
 }
