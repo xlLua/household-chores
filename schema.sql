@@ -27,7 +27,7 @@ create table if not exists chores (
 
   recurrence_kind     text not null default 'weekly'
     check (recurrence_kind in ('once','daily','weekly','biweekly','monthly','every_n_days')),
-  -- Only read when recurrence_kind = 'every_n_days'.
+  -- Days for 'every_n_days', months for 'monthly' (1, 3, 6...); ignored otherwise.
   recurrence_interval int  not null default 1 check (recurrence_interval between 1 and 365),
   -- 'calendar'   = every Monday, whenever it was last done (trash)
   -- 'completion' = ~7 days after someone last did it (vacuuming)

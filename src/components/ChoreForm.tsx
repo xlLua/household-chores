@@ -3,14 +3,27 @@ import { Glyph, GLYPH_NAMES } from './glyphs'
 import { toISO } from '../lib/recurrence'
 import type { Chore, ChoreDraft, GlyphName, RecurrenceAnchor, RecurrenceKind } from '../lib/types'
 
-const KINDS: Array<{ value: RecurrenceKind; label: string }> = [
-  { value: 'daily', label: 'Elke dag' },
-  { value: 'weekly', label: 'Elke week' },
-  { value: 'biweekly', label: 'Elke twee weken' },
-  { value: 'monthly', label: 'Elke maand' },
-  { value: 'every_n_days', label: 'Elke N dagen' },
-  { value: 'once', label: 'Eenmalig' },
+/** Repeat options as shown; the monthly ones differ only in interval, which
+ *  for 'monthly' is the number of months. */
+const REPEATS: Array<{ id: string; label: string; kind: RecurrenceKind; interval?: number }> = [
+  { id: 'daily', label: 'Elke dag', kind: 'daily' },
+  { id: 'weekly', label: 'Elke week', kind: 'weekly' },
+  { id: 'biweekly', label: 'Elke twee weken', kind: 'biweekly' },
+  { id: 'monthly', label: 'Elke maand', kind: 'monthly', interval: 1 },
+  { id: 'quarterly', label: 'Elke 3 maanden', kind: 'monthly', interval: 3 },
+  { id: 'halfyearly', label: 'Elke 6 maanden', kind: 'monthly', interval: 6 },
+  { id: 'every_n_days', label: 'Elke N dagen', kind: 'every_n_days' },
+  { id: 'once', label: 'Eenmalig', kind: 'once' },
 ]
+
+function repeatOf(draft: ChoreDraft): string {
+  const match = REPEATS.find(
+    (r) =>
+      r.kind === draft.recurrence_kind &&
+      (r.interval === undefined || r.interval === draft.recurrence_interval),
+  )
+  return (match ?? REPEATS.find((r) => r.kind === draft.recurrence_kind))!.id
+}
 
 function emptyDraft(): ChoreDraft {
   return {
@@ -19,7 +32,7 @@ function emptyDraft(): ChoreDraft {
     points: 3,
     glyph: 'broom',
     recurrence_kind: 'weekly',
-    recurrence_interval: 7,
+    recurrence_interval: 1,
     recurrence_anchor: 'calendar',
     start_date: toISO(new Date()),
   }
@@ -101,12 +114,24 @@ export function ChoreForm({
           <span className="label">Herhaling</span>
           <select
             className="select"
-            value={draft.recurrence_kind}
-            onChange={(e) => set('recurrence_kind', e.target.value as RecurrenceKind)}
+            value={repeatOf(draft)}
+            onChange={(e) => {
+              const r = REPEATS.find((x) => x.id === e.target.value)!
+              // The interval means months for 'monthly' and days for
+              // 'every_n_days', so never carry it across from another option.
+              const interval =
+                r.interval ??
+                (r.kind === 'every_n_days'
+                  ? draft.recurrence_kind === 'every_n_days'
+                    ? draft.recurrence_interval
+                    : 7
+                  : 1)
+              setDraft((d) => ({ ...d, recurrence_kind: r.kind, recurrence_interval: interval }))
+            }}
           >
-            {KINDS.map((k) => (
-              <option key={k.value} value={k.value}>
-                {k.label}
+            {REPEATS.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.label}
               </option>
             ))}
           </select>

@@ -19,7 +19,7 @@ export function recurrenceLabel(chore: Chore): string {
     daily: 'Elke dag',
     weekly: 'Elke week',
     biweekly: 'Elke twee weken',
-    monthly: 'Elke maand',
+    monthly: n > 1 ? `Elke ${n} maanden` : 'Elke maand',
     every_n_days: `Elke ${n} dagen`,
   }
   const label = base[chore.recurrence_kind]
@@ -39,7 +39,7 @@ export function stepFrom(chore: Chore, date: Date): Date | null {
     case 'biweekly':
       return addDays(date, 14)
     case 'monthly':
-      return addMonths(date, 1)
+      return addMonths(date, monthsOf(chore))
     case 'every_n_days':
       return addDays(date, Math.max(1, chore.recurrence_interval))
   }
@@ -127,9 +127,14 @@ function stepDays(chore: Chore): number {
   }
 }
 
+/** For 'monthly', recurrence_interval is the number of months (1, 3, 6...). */
+function monthsOf(chore: Chore): number {
+  return Math.max(1, chore.recurrence_interval)
+}
+
 /** The k-th occurrence, measured from start_date. */
 function occurrenceAt(chore: Chore, start: Date, k: number): Date {
-  if (chore.recurrence_kind === 'monthly') return addMonths(start, k)
+  if (chore.recurrence_kind === 'monthly') return addMonths(start, k * monthsOf(chore))
   return addDays(start, k * stepDays(chore))
 }
 
@@ -139,7 +144,7 @@ function firstIndexOnOrAfter(chore: Chore, start: Date, date: Date): number {
   // shouldn't need thousands of iterations.
   let k =
     chore.recurrence_kind === 'monthly'
-      ? differenceInCalendarMonths(date, start)
+      ? Math.floor(differenceInCalendarMonths(date, start) / monthsOf(chore))
       : Math.ceil(differenceInCalendarDays(date, start) / stepDays(chore))
   k = Math.max(0, k)
   while (k > 0 && !isAfter(date, occurrenceAt(chore, start, k - 1))) k -= 1

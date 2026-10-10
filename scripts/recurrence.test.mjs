@@ -96,13 +96,25 @@ test('calendar: biweekly steps two weeks', () => {
 })
 
 test('monthly: the 31st clamps for February, then returns to the 31st', () => {
-  const c = chore({ recurrence_kind: 'monthly', start_date: '2027-01-31' })
+  const c = chore({ recurrence_kind: 'monthly', recurrence_interval: 1, start_date: '2027-01-31' })
   assert.deepEqual(run(c, [inst('2027-01-31')], '2027-02-10'), ['2027-02-28'])
   assert.deepEqual(run(c, [inst('2027-01-31'), inst('2027-02-28')], '2027-03-05'), ['2027-03-31'])
   assert.deepEqual(
     run(c, [inst('2027-01-31'), inst('2027-02-28'), inst('2027-03-31')], '2027-04-05'),
     ['2027-04-30'],
   )
+})
+
+test('every 3 months: calendar steps by the interval, clamping like monthly', () => {
+  const c = chore({ recurrence_kind: 'monthly', recurrence_interval: 3, start_date: '2026-11-30' })
+  assert.deepEqual(run(c, [], '2026-10-10'), ['2026-11-30'])
+  assert.deepEqual(run(c, [inst('2026-11-30')], '2026-12-05'), ['2027-02-28'])
+  assert.deepEqual(run(c, [inst('2026-11-30'), inst('2027-02-28')], '2027-03-01'), ['2027-05-30'])
+})
+
+test('every 6 months: a long-missed chore lands on the latest past occurrence', () => {
+  const c = chore({ recurrence_kind: 'monthly', recurrence_interval: 6, start_date: '2024-01-15' })
+  assert.deepEqual(run(c, [], '2026-10-10'), ['2026-07-15'])
 })
 
 // --- completion-anchored ---------------------------------------------------
@@ -125,6 +137,12 @@ test('completion: next is counted from the day it was done', () => {
 test('completion: steps past a collision', () => {
   const done = inst('2026-10-05', 'done', '2026-10-07T18:00:00Z')
   assert.deepEqual(run(every3, [done, inst('2026-10-10', 'skipped')], '2026-10-07'), ['2026-10-11'])
+})
+
+test('completion: every 3 months counts from the day it was done', () => {
+  const c = chore({ recurrence_kind: 'monthly', recurrence_interval: 3, recurrence_anchor: 'completion' })
+  const done = inst('2026-10-01', 'done', '2026-10-04T12:00:00Z')
+  assert.deepEqual(run(c, [done], '2026-10-04'), ['2027-01-04'])
 })
 
 test('completion: only skipped instances leaves it alone', () => {
