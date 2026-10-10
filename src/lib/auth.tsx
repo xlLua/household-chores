@@ -39,6 +39,26 @@ declare global {
   }
 }
 
+const PARTICLES = new Set(['van', 'de', 'der', 'den', 'het', 'ten', 'ter', 'te', "'t"])
+
+/**
+ * Google accounts sometimes carry an all-lowercase name ("dario verschueren").
+ * Only then is it capitalised -- Dutch particles stay lowercase mid-name
+ * ("van Rijswijck") -- and a name that already has capitals is left alone.
+ */
+export function tidyName(name: string): string {
+  const trimmed = name.trim()
+  if (trimmed !== trimmed.toLowerCase()) return trimmed
+  return trimmed
+    .split(/\s+/)
+    .map((word, i) =>
+      i > 0 && PARTICLES.has(word)
+        ? word
+        : word.replace(/(^|-)(\p{L})/gu, (_, sep: string, ch: string) => sep + ch.toUpperCase()),
+    )
+    .join(' ')
+}
+
 /**
  * Google wants the SHA-256 of the nonce; Supabase wants the original. Sending
  * the same value to both fails verification, which is the usual cause of
@@ -146,8 +166,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const meta = session.user.user_metadata as Record<string, string | undefined>
     const row = {
       user_id: session.user.id,
-      display_name:
+      display_name: tidyName(
         meta.full_name ?? meta.name ?? session.user.email?.split('@')[0] ?? 'Huisgenoot',
+      ),
       avatar_url: meta.avatar_url ?? meta.picture ?? null,
     }
     let cancelled = false
