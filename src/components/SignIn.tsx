@@ -20,18 +20,18 @@ export function SignIn() {
 
         <h1 className="signin__title">Atelier</h1>
         <p className="signin__body">
-          A shared grimoire of household chores.
+          Huishoudtaken voor het appartement.
           <br />
-          Sign in to see what&rsquo;s due.
+          Log in om te zien wat er moet gebeuren.
         </p>
 
         <div className="signin__google" ref={ref} />
 
         {!gisReady && (
           <p className="signin__fallback">
-            Google&rsquo;s sign-in didn&rsquo;t load.{' '}
+            Inloggen met Google is niet geladen.{' '}
             <button type="button" onClick={() => void signInWithRedirect()}>
-              Continue with Google instead
+              Toch doorgaan met Google
             </button>
           </p>
         )}

@@ -17,10 +17,10 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
       },
       manifest: {
-        name: 'Atelier — Household Chores',
+        name: 'Atelier — Huishoudtaken',
         short_name: 'Atelier',
-        description: 'A shared grimoire of household chores.',
-        lang: 'en',
+        description: 'Huishoudtaken voor het appartement.',
+        lang: 'nl',
         start_url: '/',
         scope: '/',
         display: 'standalone',

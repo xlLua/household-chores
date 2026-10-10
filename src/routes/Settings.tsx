@@ -24,15 +24,15 @@ export function SettingsPage() {
     <>
       <header className="topbar">
         <div>
-          <h1>Settings</h1>
-          <p className="topbar__sub">Your corner of the atelier.</p>
+          <h1>Instellingen</h1>
+          <p className="topbar__sub">Je account en de app.</p>
         </div>
       </header>
 
       <main className="page">
         <section className="section">
           <div className="section__head">
-            <span className="label">You</span>
+            <span className="label">Jij</span>
           </div>
           <div className="sheet" style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
             {profile?.avatar_url ? (
@@ -63,24 +63,24 @@ export function SettingsPage() {
         {showInstallHint && (
           <section className="section">
             <div className="section__head">
-              <span className="label">Install it</span>
+              <span className="label">Installeren</span>
             </div>
             <div className="sheet">
               <p style={{ margin: '0 0 0.5rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                 <Smartphone size={17} aria-hidden="true" />
-                <strong>Add Atelier to your home screen</strong>
+                <strong>Zet Atelier op je beginscherm</strong>
               </p>
               <p style={{ margin: 0, fontSize: 'var(--t-small)', color: 'var(--text-muted)' }}>
                 {isIos() ? (
                   <>
-                    In Safari, tap <Share size={13} style={{ verticalAlign: '-2px' }} aria-hidden="true" />{' '}
-                    <strong>Share</strong> → <strong>Add to Home Screen</strong>. It then opens
-                    like an app, and it&rsquo;s also what web notifications will need later.
+                    Tik in Safari op <Share size={13} style={{ verticalAlign: '-2px' }} aria-hidden="true" />{' '}
+                    <strong>Deel</strong> → <strong>Zet op beginscherm</strong>. Dan opent het als
+                    een app; dat is later ook nodig voor meldingen.
                   </>
                 ) : (
                   <>
-                    Use your browser menu → <strong>Install app</strong> (or{' '}
-                    <strong>Add to Home screen</strong>).
+                    Kies in het browsermenu <strong>App installeren</strong> (of{' '}
+                    <strong>Toevoegen aan startscherm</strong>).
                   </>
                 )}
               </p>
@@ -90,12 +90,12 @@ export function SettingsPage() {
 
         <section className="section">
           <div className="section__head">
-            <span className="label">Household</span>
+            <span className="label">Huishouden</span>
           </div>
           <div className="sheet">
             <p style={{ margin: 0, fontSize: 'var(--t-small)', color: 'var(--text-muted)' }}>
-              {profiles.length} {profiles.length === 1 ? 'roommate' : 'roommates'} ·{' '}
-              {chores.filter((c) => !c.archived_at).length} chores on the list
+              {profiles.length} {profiles.length === 1 ? 'huisgenoot' : 'huisgenoten'} ·{' '}
+              {chores.filter((c) => !c.archived_at).length} actieve taken
             </p>
           </div>
         </section>
@@ -103,7 +103,7 @@ export function SettingsPage() {
         <section className="section">
           <button type="button" className="btn btn--danger" onClick={() => void signOut()}>
             <LogOut size={16} strokeWidth={1.9} aria-hidden="true" />
-            Sign out
+            Uitloggen
           </button>
         </section>
 

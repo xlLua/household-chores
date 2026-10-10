@@ -7,7 +7,7 @@ import type {
   InstanceWithChore,
   Profile,
 } from './types'
-import { addDays, parseISO, startOfToday } from 'date-fns'
+import { parseISO, startOfToday } from 'date-fns'
 
 const INSTANCE_WITH_CHORE = '*, chore:chores(*)'
 
@@ -27,15 +27,14 @@ export async function fetchProfiles(): Promise<Profile[]> {
   return data as Profile[]
 }
 
-/** Everything relevant to the Today board: open instances plus whatever was
- *  completed recently, so finishing a chore doesn't make it vanish instantly. */
+/** Everything relevant to the Today board: every open instance, however far
+ *  off, plus whatever was completed today, so finishing a chore doesn't make
+ *  it vanish instantly. */
 export async function fetchBoard(): Promise<InstanceWithChore[]> {
-  const today = startOfToday()
   const { data, error } = await supabase
     .from('chore_instances')
     .select(INSTANCE_WITH_CHORE)
-    .gte('due_date', toISO(addDays(today, -45)))
-    .lte('due_date', toISO(addDays(today, 21)))
+    .or(`status.eq.open,completed_at.gte."${startOfToday().toISOString()}"`)
     .order('due_date', { ascending: true })
   if (error) throw error
   return (data as unknown as InstanceWithChore[]).filter((i) => i.chore)
@@ -69,6 +68,27 @@ export async function ensureInstances(): Promise<number> {
     const list = byChore.get(inst.chore_id) ?? []
     list.push(inst)
     byChore.set(inst.chore_id, list)
+  }
+
+  // One open instance per chore. Rows generated ahead of time by older
+  // versions, or by two phones racing, get trimmed to the earliest.
+  const surplus = [...byChore.values()].flatMap((list) =>
+    list
+      .filter((i) => i.status === 'open')
+      .sort((a, b) => (a.due_date < b.due_date ? -1 : 1))
+      .slice(1),
+  )
+  if (surplus.length > 0) {
+    const { error: trimError } = await supabase
+      .from('chore_instances')
+      .delete()
+      .in(
+        'id',
+        surplus.map((i) => i.id),
+      )
+    if (trimError) throw trimError
+    const gone = new Set(surplus.map((i) => i.id))
+    for (const [id, list] of byChore) byChore.set(id, list.filter((i) => !gone.has(i.id)))
   }
 
   const today = startOfToday()
@@ -113,20 +133,27 @@ export async function completeInstance(
   if (error) throw error
   if (!data || data.length === 0) return { raced: true }
 
-  // Completion-anchored chores schedule their next occurrence from the moment
-  // they were done, not from the calendar.
-  if (instance.chore.recurrence_anchor === 'completion') {
-    await ensureInstances()
-  }
+  // The next occurrence only exists once this one is done.
+  await ensureInstances()
   return { raced: false }
 }
 
-export async function uncompleteInstance(id: string): Promise<void> {
+export async function uncompleteInstance(instance: InstanceWithChore): Promise<void> {
   const { error } = await supabase
     .from('chore_instances')
     .update({ status: 'open', completed_by: null, completed_at: null })
-    .eq('id', id)
+    .eq('id', instance.id)
   if (error) throw error
+
+  // Completing it generated the next occurrence. Reopening this one would
+  // leave two open, so drop the other -- a chore has one open instance at a time.
+  const { error: deleteError } = await supabase
+    .from('chore_instances')
+    .delete()
+    .eq('chore_id', instance.chore_id)
+    .eq('status', 'open')
+    .neq('id', instance.id)
+  if (deleteError) throw deleteError
 }
 
 export async function skipInstance(id: string): Promise<void> {
@@ -135,6 +162,7 @@ export async function skipInstance(id: string): Promise<void> {
     .update({ status: 'skipped', completed_by: null, completed_at: null })
     .eq('id', id)
   if (error) throw error
+  await ensureInstances()
 }
 
 // --- chore definitions -----------------------------------------------------
@@ -149,6 +177,14 @@ export async function createChore(draft: ChoreDraft): Promise<Chore> {
 export async function updateChore(id: string, patch: Partial<ChoreDraft>): Promise<void> {
   const { error } = await supabase.from('chores').update(patch).eq('id', id)
   if (error) throw error
+  // Regenerate the open instance so a changed schedule takes effect now
+  // rather than after the next completion.
+  const { error: deleteError } = await supabase
+    .from('chore_instances')
+    .delete()
+    .eq('chore_id', id)
+    .eq('status', 'open')
+  if (deleteError) throw deleteError
   await ensureInstances()
 }
 
@@ -158,13 +194,8 @@ export async function archiveChore(id: string): Promise<void> {
     .update({ archived_at: new Date().toISOString() })
     .eq('id', id)
   if (error) throw error
-  // Drop future occurrences; keep the completed history for the leaderboard.
-  await supabase
-    .from('chore_instances')
-    .delete()
-    .eq('chore_id', id)
-    .eq('status', 'open')
-    .gte('due_date', toISO(startOfToday()))
+  // Drop the open occurrence; keep the completed history for the leaderboard.
+  await supabase.from('chore_instances').delete().eq('chore_id', id).eq('status', 'open')
 }
 
 export async function unarchiveChore(id: string): Promise<void> {

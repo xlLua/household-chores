@@ -5,13 +5,13 @@ export function SetupNeeded() {
     <main className="signin">
       <div className="sheet signin__card" style={{ textAlign: 'left' }}>
         <h1 className="signin__title" style={{ textAlign: 'center' }}>
-          Almost there
+          Bijna klaar
         </h1>
         <p className="signin__body" style={{ textAlign: 'center' }}>
-          The atelier has no keys yet.
+          De configuratie ontbreekt nog.
         </p>
         <p style={{ fontSize: 'var(--t-small)', color: 'var(--text-muted)' }}>
-          Copy <code>.env.example</code> to <code>.env.local</code> and fill in:
+          Kopieer <code>.env.example</code> naar <code>.env.local</code> en vul in:
         </p>
         <ul
           style={{
@@ -26,8 +26,8 @@ export function SetupNeeded() {
           <li><code>VITE_GOOGLE_CLIENT_ID</code></li>
         </ul>
         <p style={{ fontSize: 'var(--t-small)', color: 'var(--text-muted)' }}>
-          Then restart the dev server. See <code>README.md</code> for where each
-          value comes from.
+          Start daarna de dev-server opnieuw. In <code>README.md</code> staat waar
+          elke waarde vandaan komt.
         </p>
       </div>
     </main>

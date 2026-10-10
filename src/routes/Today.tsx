@@ -22,11 +22,18 @@ export function Today() {
   }, [toast])
 
   const groups = useMemo(() => {
-    const open = instances.filter((i) => i.status === 'open')
+    // One card per chore: the earliest open instance. The data layer already
+    // keeps it that way; this just stops a race between phones from showing.
+    const seen = new Set<string>()
+    const open = instances.filter((i) => {
+      if (i.status !== 'open' || seen.has(i.chore_id)) return false
+      seen.add(i.chore_id)
+      return true
+    })
     return {
       overdue: open.filter((i) => bucketOf(i) === 'overdue'),
       today: open.filter((i) => bucketOf(i) === 'today'),
-      upcoming: open.filter((i) => bucketOf(i) === 'upcoming').slice(0, 8),
+      upcoming: open.filter((i) => bucketOf(i) === 'upcoming'),
       doneToday: instances.filter(
         (i) => i.status === 'done' && i.completed_at && isToday(parseISO(i.completed_at)),
       ),
@@ -41,15 +48,15 @@ export function Today() {
       const { raced } = await completeInstance(instance, session.user.id)
       if (raced) {
         setStamping(null)
-        setToast('Someone already got that one.')
+        setToast('Iemand anders was je voor.')
       } else {
-        setToast(`+${instance.chore.points} pts`)
+        setToast(`+${instance.chore.points} punten`)
       }
       await reload()
     } catch (e) {
       console.error(e)
       setStamping(null)
-      setToast(online ? 'Could not save that.' : 'You are offline.')
+      setToast(online ? 'Opslaan is mislukt.' : 'Je bent offline.')
     } finally {
       setBusy(null)
       window.setTimeout(() => setStamping(null), 1500)
@@ -59,18 +66,18 @@ export function Today() {
   async function onUndo(instance: InstanceWithChore) {
     setBusy(instance.id)
     try {
-      await uncompleteInstance(instance.id)
+      await uncompleteInstance(instance)
       await reload()
     } catch (e) {
       console.error(e)
-      setToast('Could not undo that.')
+      setToast('Ongedaan maken is mislukt.')
     } finally {
       setBusy(null)
     }
   }
 
   const hour = new Date().getHours()
-  const timeOfDay = hour < 12 ? 'Morning' : hour < 18 ? 'Afternoon' : 'Evening'
+  const timeOfDay = hour < 12 ? 'Goedemorgen' : hour < 18 ? 'Goedemiddag' : 'Goedenavond'
   const firstName = profile?.display_name?.split(' ')[0]
   const nothingOpen =
     groups.overdue.length === 0 && groups.today.length === 0 && groups.upcoming.length === 0
@@ -79,9 +86,9 @@ export function Today() {
     <>
       <header className="topbar">
         <div>
-          <h1>Today</h1>
+          <h1>Vandaag</h1>
           <p className="topbar__sub">
-            {firstName ? `${timeOfDay}, ${firstName}.` : 'The household ledger.'}
+            {firstName ? `${timeOfDay}, ${firstName}.` : 'Huishoudtaken'}
           </p>
         </div>
         {profile?.avatar_url && (
@@ -93,24 +100,24 @@ export function Today() {
         {!online && (
           <p className="banner banner--warn">
             <WifiOff size={15} aria-hidden="true" />
-            Offline — you can read the list, but ticking things off needs a signal.
+            Offline — je kunt de lijst bekijken, maar voor afvinken heb je verbinding nodig.
           </p>
         )}
         {error && online && <p className="banner banner--warn">{error}</p>}
 
         {loading ? (
           <div className="center-pad">
-            <div className="spinner" role="status" aria-label="Loading" />
+            <div className="spinner" role="status" aria-label="Laden" />
           </div>
         ) : nothingOpen && groups.doneToday.length === 0 ? (
           <Empty
-            title="The atelier is tidy"
-            body="Nothing is due. Add a chore from the Chores tab to start the ledger."
+            title="Het appartement is opgeruimd"
+            body="Er hoeft niets te gebeuren. Voeg een taak toe via het tabblad Taken."
           />
         ) : (
           <>
             <Section
-              title="Overdue"
+              title="Te laat"
               items={groups.overdue}
               profiles={profiles}
               stamping={stamping}
@@ -119,7 +126,7 @@ export function Today() {
               onUndo={onUndo}
             />
             <Section
-              title="Due today"
+              title="Vandaag"
               items={groups.today}
               profiles={profiles}
               stamping={stamping}
@@ -128,7 +135,7 @@ export function Today() {
               onUndo={onUndo}
             />
             <Section
-              title="Coming up"
+              title="Binnenkort"
               items={groups.upcoming}
               profiles={profiles}
               stamping={stamping}
@@ -137,7 +144,7 @@ export function Today() {
               onUndo={onUndo}
             />
             <Section
-              title="Done today"
+              title="Vandaag gedaan"
               items={groups.doneToday}
               profiles={profiles}
               stamping={stamping}
@@ -148,8 +155,8 @@ export function Today() {
 
             {nothingOpen && groups.doneToday.length > 0 && (
               <Empty
-                title="All done for today"
-                body="Nothing left on the ledger."
+                title="Alles gedaan voor vandaag"
+                body="Er staat niets meer open."
                 art={false}
               />
             )}

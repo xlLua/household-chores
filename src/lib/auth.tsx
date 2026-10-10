@@ -121,7 +121,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const row = {
       user_id: session.user.id,
       display_name:
-        meta.full_name ?? meta.name ?? session.user.email?.split('@')[0] ?? 'Roommate',
+        meta.full_name ?? meta.name ?? session.user.email?.split('@')[0] ?? 'Huisgenoot',
       avatar_url: meta.avatar_url ?? meta.picture ?? null,
     }
     let cancelled = false
@@ -156,7 +156,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (e) {
       console.error(e)
       setError(
-        e instanceof Error ? e.message : 'Google sign-in was refused. Try again.',
+        e instanceof Error ? e.message : 'Inloggen met Google is mislukt. Probeer het opnieuw.',
       )
     }
   }, [])
@@ -171,6 +171,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       size: 'large',
       shape: 'pill',
       text: 'continue_with',
+      locale: 'nl',
       logo_alignment: 'left',
       width: 260,
     })

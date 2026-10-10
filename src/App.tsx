@@ -31,7 +31,7 @@ function Gate() {
   if (loading) {
     return (
       <div className="center-pad">
-        <div className="spinner" role="status" aria-label="Loading" />
+        <div className="spinner" role="status" aria-label="Laden" />
       </div>
     )
   }

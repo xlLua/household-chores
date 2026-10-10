@@ -4,12 +4,12 @@ import { toISO } from '../lib/recurrence'
 import type { Chore, ChoreDraft, GlyphName, RecurrenceAnchor, RecurrenceKind } from '../lib/types'
 
 const KINDS: Array<{ value: RecurrenceKind; label: string }> = [
-  { value: 'daily', label: 'Every day' },
-  { value: 'weekly', label: 'Weekly' },
-  { value: 'biweekly', label: 'Every two weeks' },
-  { value: 'monthly', label: 'Monthly' },
-  { value: 'every_n_days', label: 'Every N days' },
-  { value: 'once', label: 'One-off' },
+  { value: 'daily', label: 'Elke dag' },
+  { value: 'weekly', label: 'Elke week' },
+  { value: 'biweekly', label: 'Elke twee weken' },
+  { value: 'monthly', label: 'Elke maand' },
+  { value: 'every_n_days', label: 'Elke N dagen' },
+  { value: 'once', label: 'Eenmalig' },
 ]
 
 function emptyDraft(): ChoreDraft {
@@ -67,12 +67,12 @@ export function ChoreForm({
   return (
     <form className="sheet" onSubmit={submit}>
       <label className="field">
-        <span className="label">Chore</span>
+        <span className="label">Taak</span>
         <input
           className="input"
           value={draft.title}
           onChange={(e) => set('title', e.target.value)}
-          placeholder="Take out the trash"
+          placeholder="Vuilnis buitenzetten"
           maxLength={80}
           required
           autoFocus
@@ -80,7 +80,7 @@ export function ChoreForm({
       </label>
 
       <div className="field">
-        <span className="label">Mark</span>
+        <span className="label">Icoon</span>
         <div className="glyph-picker">
           {GLYPH_NAMES.map((name: GlyphName) => (
             <button
@@ -98,7 +98,7 @@ export function ChoreForm({
 
       <div className="row">
         <label className="field">
-          <span className="label">Repeats</span>
+          <span className="label">Herhaling</span>
           <select
             className="select"
             value={draft.recurrence_kind}
@@ -113,7 +113,7 @@ export function ChoreForm({
         </label>
 
         <label className="field">
-          <span className="label">Points</span>
+          <span className="label">Punten</span>
           <input
             className="input"
             type="number"
@@ -128,7 +128,7 @@ export function ChoreForm({
 
       {draft.recurrence_kind === 'every_n_days' && (
         <label className="field">
-          <span className="label">Days between</span>
+          <span className="label">Aantal dagen</span>
           <input
             className="input"
             type="number"
@@ -145,29 +145,29 @@ export function ChoreForm({
 
       {draft.recurrence_kind !== 'once' && (
         <label className="field">
-          <span className="label">Counted from</span>
+          <span className="label">Gerekend vanaf</span>
           <select
             className="select"
             value={draft.recurrence_anchor}
             onChange={(e) => set('recurrence_anchor', e.target.value as RecurrenceAnchor)}
           >
-            <option value="calendar">The calendar — e.g. every Monday</option>
-            <option value="completion">When it was last done</option>
+            <option value="calendar">De kalender — bijv. elke maandag</option>
+            <option value="completion">De laatste keer dat het gedaan is</option>
           </select>
           <span
             className="card__notes"
             style={{ display: 'block', marginTop: '0.35rem' }}
           >
             {draft.recurrence_anchor === 'calendar'
-              ? 'Comes due on schedule whether or not it was done last time.'
-              : 'Comes due again once someone has done it, counting from then.'}
+              ? 'Volgt een vast schema, ook als het een keer later gedaan is.'
+              : 'Komt terug nadat iemand het gedaan heeft, gerekend vanaf dat moment.'}
           </span>
         </label>
       )}
 
       <label className="field">
         <span className="label">
-          {draft.recurrence_kind === 'once' ? 'Due' : 'Starting'}
+          {draft.recurrence_kind === 'once' ? 'Datum' : 'Vanaf'}
         </span>
         <input
           className="input"
@@ -177,28 +177,28 @@ export function ChoreForm({
         />
         {draft.recurrence_kind === 'weekly' && (
           <span className="card__notes" style={{ display: 'block', marginTop: '0.35rem' }}>
-            Pick the weekday you want it on — the schedule repeats from here.
+            Kies de weekdag waarop het moet gebeuren — het schema herhaalt vanaf hier.
           </span>
         )}
       </label>
 
       <label className="field">
-        <span className="label">Notes (optional)</span>
+        <span className="label">Notities (optioneel)</span>
         <textarea
           className="textarea"
           value={draft.notes ?? ''}
           onChange={(e) => set('notes', e.target.value || null)}
-          placeholder="Blue bin, out by 7am"
+          placeholder="Blauwe container, voor 7 uur buiten"
           maxLength={280}
         />
       </label>
 
       <div className="row" style={{ marginTop: '0.25rem' }}>
         <button type="button" className="btn btn--ghost" onClick={onCancel}>
-          Cancel
+          Annuleren
         </button>
         <button type="submit" className="btn btn--primary" disabled={saving}>
-          {saving ? 'Saving…' : initial ? 'Save changes' : 'Add chore'}
+          {saving ? 'Opslaan…' : initial ? 'Wijzigingen opslaan' : 'Taak toevoegen'}
         </button>
       </div>
     </form>

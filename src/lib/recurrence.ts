@@ -5,16 +5,9 @@ import {
   differenceInCalendarMonths,
   format,
   isAfter,
-  isBefore,
   parseISO,
 } from 'date-fns'
 import type { Chore, ChoreInstance, RecurrenceKind } from './types'
-
-/** How far ahead instances are materialised. */
-export const HORIZON_DAYS = 14
-/** How far back the generator is willing to create missed occurrences. Stops a
- *  chore started in January from spawning 200 overdue rows in October. */
-export const BACKFILL_DAYS = 30
 
 export const ISO = 'yyyy-MM-dd'
 export const toISO = (d: Date) => format(d, ISO)
@@ -22,16 +15,16 @@ export const toISO = (d: Date) => format(d, ISO)
 export function recurrenceLabel(chore: Chore): string {
   const n = chore.recurrence_interval
   const base: Record<RecurrenceKind, string> = {
-    once: 'One-off',
-    daily: 'Every day',
-    weekly: 'Weekly',
-    biweekly: 'Every two weeks',
-    monthly: 'Monthly',
-    every_n_days: `Every ${n} days`,
+    once: 'Eenmalig',
+    daily: 'Elke dag',
+    weekly: 'Elke week',
+    biweekly: 'Elke twee weken',
+    monthly: 'Elke maand',
+    every_n_days: `Elke ${n} dagen`,
   }
   const label = base[chore.recurrence_kind]
   if (chore.recurrence_kind === 'once') return label
-  return chore.recurrence_anchor === 'completion' ? `${label}, after it's done` : label
+  return chore.recurrence_anchor === 'completion' ? `${label}, na de vorige keer` : label
 }
 
 /** The next occurrence after `date`, or null for a one-off. */
@@ -56,6 +49,10 @@ export function stepFrom(chore: Chore, date: Date): Date | null {
  * Which due dates are missing for this chore, given the instances that already
  * exist. Pure, so the awkward parts are unit-testable without a database.
  *
+ * Every chore has exactly one open instance at a time: the next one is only
+ * created once the current one is done (or skipped). So this returns at most
+ * one date, and nothing while an instance is still open.
+ *
  * Idempotent by construction: it only ever returns dates not already present,
  * and `unique (chore_id, due_date)` catches anything that races past it.
  */
@@ -65,17 +62,15 @@ export function missingDueDates(
   today: Date,
 ): string[] {
   if (chore.archived_at) return []
+  if (existing.some((i) => i.status === 'open')) return []
 
-  const taken = new Set(existing.map((i) => i.due_date))
-  const horizon = addDays(today, HORIZON_DAYS)
-  const floor = addDays(today, -BACKFILL_DAYS)
+  // --- one-off ------------------------------------------------------------
+  if (chore.recurrence_kind === 'once') {
+    return existing.length > 0 ? [] : [chore.start_date]
+  }
 
-  // --- completion-anchored: one open instance at a time -------------------
-  // The next occurrence is normally created at completion time; this branch is
-  // the self-healing path, so a failed write can't make a chore disappear.
+  // --- completion-anchored: N days after it was last done -----------------
   if (chore.recurrence_anchor === 'completion') {
-    if (existing.some((i) => i.status === 'open')) return []
-
     const done = existing
       .filter((i) => i.status === 'done' && i.completed_at)
       .sort((a, b) => (a.completed_at! < b.completed_at! ? 1 : -1))
@@ -85,24 +80,18 @@ export function missingDueDates(
       if (existing.length > 0) return [] // only skipped instances; leave it be
       next = parseISO(chore.start_date)
     } else {
-      const from = stepFrom(chore, parseISO(done[0].completed_at!.slice(0, 10)))
-      if (!from) return [] // one-off, already done
-      next = from
+      next = stepFrom(chore, parseISO(done[0].completed_at!.slice(0, 10)))!
     }
 
     // A collision with an existing row would otherwise stall the chore
     // forever, since the insert gets silently ignored.
+    const taken = new Set(existing.map((i) => i.due_date))
     let guard = 0
     while (taken.has(toISO(next)) && guard++ < 400) next = addDays(next, 1)
     return [toISO(next)]
   }
 
-  // --- one-off ------------------------------------------------------------
-  if (chore.recurrence_kind === 'once') {
-    return existing.length > 0 ? [] : [chore.start_date]
-  }
-
-  // --- calendar-anchored --------------------------------------------------
+  // --- calendar-anchored: on schedule, e.g. every Monday ------------------
   // Each occurrence is computed as an offset from start_date, NOT by stepping a
   // cursor forward one occurrence at a time. That matters for monthly: addMonths
   // clamps, so a chore due on the 31st would step to Feb 28 and then stay on the
@@ -110,30 +99,16 @@ export function missingDueDates(
   // exception instead of a permanent drift.
   const start = parseISO(chore.start_date)
 
-  // Jump straight to the first occurrence at or after the backfill floor.
-  let k = 0
-  if (isBefore(start, floor)) {
-    const span = differenceInCalendarDays(floor, start)
-    k =
-      chore.recurrence_kind === 'monthly'
-        ? Math.max(0, differenceInCalendarMonths(floor, start))
-        : Math.max(0, Math.floor(span / stepDays(chore)))
-  }
+  // The first occurrence after the last one that was dealt with.
+  const last = existing.map((i) => i.due_date).sort().at(-1)
+  let k = last ? firstIndexOnOrAfter(chore, start, addDays(parseISO(last), 1)) : 0
 
-  const out: string[] = []
-  let guard = 0
-  while (guard++ < 500) {
-    const at = occurrenceAt(chore, start, k)
-    if (isBefore(at, floor)) {
-      k += 1
-      continue
-    }
-    if (isAfter(at, horizon)) break
-    const iso = toISO(at)
-    if (!taken.has(iso)) out.push(iso)
-    k += 1
-  }
-  return out
+  // If several occurrences were missed, show only the most recent one rather
+  // than one overdue card per missed week.
+  const latestPast = firstIndexOnOrAfter(chore, start, addDays(today, 1)) - 1
+  if (latestPast > k) k = latestPast
+
+  return [toISO(occurrenceAt(chore, start, k))]
 }
 
 /** Days between occurrences, for the day-based kinds. */
@@ -156,4 +131,18 @@ function stepDays(chore: Chore): number {
 function occurrenceAt(chore: Chore, start: Date, k: number): Date {
   if (chore.recurrence_kind === 'monthly') return addMonths(start, k)
   return addDays(start, k * stepDays(chore))
+}
+
+/** The smallest k >= 0 whose occurrence falls on or after `date`. */
+function firstIndexOnOrAfter(chore: Chore, start: Date, date: Date): number {
+  // Jump close with arithmetic, then nudge -- a chore started years ago
+  // shouldn't need thousands of iterations.
+  let k =
+    chore.recurrence_kind === 'monthly'
+      ? differenceInCalendarMonths(date, start)
+      : Math.ceil(differenceInCalendarDays(date, start) / stepDays(chore))
+  k = Math.max(0, k)
+  while (k > 0 && !isAfter(date, occurrenceAt(chore, start, k - 1))) k -= 1
+  while (isAfter(date, occurrenceAt(chore, start, k))) k += 1
+  return k
 }

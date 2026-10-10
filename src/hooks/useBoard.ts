@@ -41,7 +41,7 @@ export function useBoard(): Board {
       setError(null)
     } catch (e) {
       console.error(e)
-      setError(e instanceof Error ? e.message : 'Could not reach the atelier.')
+      setError(e instanceof Error ? e.message : 'Kan de server niet bereiken.')
     } finally {
       setLoading(false)
     }

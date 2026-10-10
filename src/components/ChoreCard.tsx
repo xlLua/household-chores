@@ -1,4 +1,5 @@
 import { differenceInCalendarDays, format, parseISO } from 'date-fns'
+import { nl } from 'date-fns/locale'
 import { Check, Undo2 } from 'lucide-react'
 import { Glyph } from './glyphs'
 import { Sigil } from './Sigil'
@@ -8,12 +9,16 @@ import { recurrenceLabel } from '../lib/recurrence'
 
 function dueText(dueDate: string): string {
   const days = differenceInCalendarDays(parseISO(dueDate), new Date())
-  if (days === 0) return 'Due today'
-  if (days === 1) return 'Due tomorrow'
-  if (days === -1) return 'A day overdue'
-  if (days < -1) return `${Math.abs(days)} days overdue`
-  if (days < 7) return `Due ${format(parseISO(dueDate), 'EEEE')}`
-  return `Due ${format(parseISO(dueDate), 'd MMM')}`
+  if (days === 0) return 'Vandaag'
+  if (days === 1) return 'Morgen'
+  if (days === -1) return '1 dag te laat'
+  if (days < -1) return `${Math.abs(days)} dagen te laat`
+  if (days < 7) return capitalize(format(parseISO(dueDate), 'EEEE', { locale: nl }))
+  return format(parseISO(dueDate), 'd MMM', { locale: nl })
+}
+
+function capitalize(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
 export function ChoreCard({
@@ -57,9 +62,9 @@ export function ChoreCard({
         <p className="card__meta">
           {done ? (
             <span>
-              Done by {doer?.display_name ?? 'someone'}
+              Gedaan door {doer?.display_name ?? 'iemand'}
               {instance.completed_at
-                ? ` · ${format(parseISO(instance.completed_at), 'd MMM')}`
+                ? ` · ${format(parseISO(instance.completed_at), 'd MMM', { locale: nl })}`
                 : ''}
             </span>
           ) : (
@@ -70,7 +75,7 @@ export function ChoreCard({
             </>
           )}
           <span aria-hidden="true">·</span>
-          <span className="points">{instance.chore.points} pts</span>
+          <span className="points">{instance.chore.points} punten</span>
         </p>
         {instance.chore.notes && !done && (
           <p className="card__notes">{instance.chore.notes}</p>
@@ -83,7 +88,7 @@ export function ChoreCard({
           className="card__action"
           onClick={onUndo}
           disabled={busy}
-          aria-label={`Undo ${instance.chore.title}`}
+          aria-label={`${instance.chore.title} ongedaan maken`}
         >
           <Undo2 size={18} strokeWidth={1.8} />
         </button>
@@ -93,7 +98,7 @@ export function ChoreCard({
           className="card__action"
           onClick={onComplete}
           disabled={busy}
-          aria-label={`Mark ${instance.chore.title} done`}
+          aria-label={`${instance.chore.title} afvinken`}
         >
           <Check size={20} strokeWidth={2} />
         </button>

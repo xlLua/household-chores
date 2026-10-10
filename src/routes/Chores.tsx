@@ -33,27 +33,27 @@ export function Chores() {
     try {
       if (mode.kind === 'edit') {
         await updateChore(mode.chore.id, draft)
-        setToast('Chore updated.')
+        setToast('Taak bijgewerkt.')
       } else {
         await createChore(draft)
-        setToast('Chore added to the ledger.')
+        setToast('Taak toegevoegd.')
       }
       setMode({ kind: 'none' })
       await reload()
     } catch (e) {
       console.error(e)
-      setToast('Could not save that.')
+      setToast('Opslaan is mislukt.')
     }
   }
 
   async function onArchive(chore: Chore) {
     try {
       await archiveChore(chore.id)
-      setToast(`${chore.title} retired. Past points are kept.`)
+      setToast(`${chore.title} gearchiveerd. Eerder verdiende punten blijven staan.`)
       await reload()
     } catch (e) {
       console.error(e)
-      setToast('Could not retire that chore.')
+      setToast('Archiveren is mislukt.')
     }
   }
 
@@ -63,7 +63,7 @@ export function Chores() {
       await reload()
     } catch (e) {
       console.error(e)
-      setToast('Could not restore that chore.')
+      setToast('Terugzetten is mislukt.')
     }
   }
 
@@ -71,8 +71,8 @@ export function Chores() {
     <>
       <header className="topbar">
         <div>
-          <h1>Chores</h1>
-          <p className="topbar__sub">What the household keeps on the list.</p>
+          <h1>Taken</h1>
+          <p className="topbar__sub">Alle taken in huis.</p>
         </div>
         {mode.kind === 'none' && (
           <button
@@ -81,7 +81,7 @@ export function Chores() {
             onClick={() => setMode({ kind: 'new' })}
           >
             <Plus size={17} strokeWidth={2.2} aria-hidden="true" />
-            Add
+            Toevoegen
           </button>
         )}
       </header>
@@ -91,7 +91,7 @@ export function Chores() {
           <div className="section">
             <div className="section__head">
               <span className="label">
-                {mode.kind === 'edit' ? 'Edit chore' : 'New chore'}
+                {mode.kind === 'edit' ? 'Taak bewerken' : 'Nieuwe taak'}
               </span>
             </div>
             <ChoreForm
@@ -104,8 +104,8 @@ export function Chores() {
 
         {mode.kind === 'none' && active.length === 0 && (
           <Empty
-            title="An empty ledger"
-            body="Add the first chore and it will start appearing on Today for everyone."
+            title="Nog geen taken"
+            body="Voeg de eerste taak toe. Die verschijnt dan voor iedereen bij Vandaag."
           >
             <button
               type="button"
@@ -114,7 +114,7 @@ export function Chores() {
               onClick={() => setMode({ kind: 'new' })}
             >
               <Plus size={17} strokeWidth={2.2} aria-hidden="true" />
-              Add a chore
+              Taak toevoegen
             </button>
           </Empty>
         )}
@@ -122,7 +122,7 @@ export function Chores() {
         {active.length > 0 && (
           <section className="section">
             <div className="section__head">
-              <span className="label">On the list</span>
+              <span className="label">Actief</span>
               <span className="section__count">{active.length}</span>
             </div>
             <div className="cards">
@@ -136,7 +136,7 @@ export function Chores() {
                     <p className="card__meta">
                       <span>{recurrenceLabel(chore)}</span>
                       <span aria-hidden="true">·</span>
-                      <span className="points">{chore.points} pts</span>
+                      <span className="points">{chore.points} punten</span>
                     </p>
                   </div>
                   <div style={{ display: 'flex', gap: '0.35rem' }}>
@@ -144,7 +144,7 @@ export function Chores() {
                       type="button"
                       className="icon-btn"
                       onClick={() => setMode({ kind: 'edit', chore })}
-                      aria-label={`Edit ${chore.title}`}
+                      aria-label={`${chore.title} bewerken`}
                     >
                       <Pencil size={16} strokeWidth={1.8} />
                     </button>
@@ -152,7 +152,7 @@ export function Chores() {
                       type="button"
                       className="icon-btn"
                       onClick={() => void onArchive(chore)}
-                      aria-label={`Retire ${chore.title}`}
+                      aria-label={`${chore.title} archiveren`}
                     >
                       <Archive size={16} strokeWidth={1.8} />
                     </button>
@@ -166,7 +166,7 @@ export function Chores() {
         {archived.length > 0 && (
           <section className="section">
             <div className="section__head">
-              <span className="label">Retired</span>
+              <span className="label">Gearchiveerd</span>
               <span className="section__count">{archived.length}</span>
             </div>
             <div className="cards">
@@ -178,14 +178,14 @@ export function Chores() {
                   <div className="card__body">
                     <h3 className="card__title">{chore.title}</h3>
                     <p className="card__meta">
-                      <span>Retired</span>
+                      <span>Gearchiveerd</span>
                     </p>
                   </div>
                   <button
                     type="button"
                     className="icon-btn"
                     onClick={() => void onRestore(chore)}
-                    aria-label={`Restore ${chore.title}`}
+                    aria-label={`${chore.title} terugzetten`}
                   >
                     <RotateCcw size={16} strokeWidth={1.8} />
                   </button>

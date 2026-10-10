@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { addMonths, format, isSameMonth, startOfMonth } from 'date-fns'
+import { nl } from 'date-fns/locale'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { fetchScores, type Score } from '../lib/chores'
 import { useBoardContext } from '../hooks/BoardProvider'
@@ -29,6 +30,10 @@ function Laurel() {
   )
 }
 
+function capitalize(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1)
+}
+
 interface Row extends Score {
   name: string
   isMe: boolean
@@ -51,7 +56,7 @@ export function Leaderboard() {
       })
       .catch((e) => {
         console.error(e)
-        if (!cancelled) setError('Could not load the tally.')
+        if (!cancelled) setError('Scores laden is mislukt.')
       })
     return () => {
       cancelled = true
@@ -85,7 +90,7 @@ export function Leaderboard() {
       <header className="topbar">
         <div>
           <h1>Scores</h1>
-          <p className="topbar__sub">Who has been carrying the household.</p>
+          <p className="topbar__sub">Wie deze maand de meeste punten heeft.</p>
         </div>
       </header>
 
@@ -95,17 +100,17 @@ export function Leaderboard() {
             type="button"
             className="icon-btn"
             onClick={() => setMonth((m) => addMonths(m, -1))}
-            aria-label="Previous month"
+            aria-label="Vorige maand"
           >
             <ChevronLeft size={18} strokeWidth={1.9} />
           </button>
-          <span className="month-switch__label">{format(month, 'MMMM yyyy')}</span>
+          <span className="month-switch__label">{capitalize(format(month, 'MMMM yyyy', { locale: nl }))}</span>
           <button
             type="button"
             className="icon-btn"
             onClick={() => setMonth((m) => addMonths(m, 1))}
             disabled={atCurrentMonth}
-            aria-label="Next month"
+            aria-label="Volgende maand"
           >
             <ChevronRight size={18} strokeWidth={1.9} />
           </button>
@@ -115,15 +120,15 @@ export function Leaderboard() {
 
         {scores === null && !error ? (
           <div className="center-pad">
-            <div className="spinner" role="status" aria-label="Loading" />
+            <div className="spinner" role="status" aria-label="Laden" />
           </div>
         ) : total === 0 ? (
           <Empty
-            title="Nothing tallied yet"
+            title="Nog geen punten"
             body={
               atCurrentMonth
-                ? 'Tick a chore off and the first points land here.'
-                : 'No chores were completed this month.'
+                ? 'Vink een taak af en de eerste punten verschijnen hier.'
+                : 'Deze maand zijn er geen taken gedaan.'
             }
           />
         ) : (
@@ -152,12 +157,12 @@ export function Leaderboard() {
                           {row.isMe && (
                             <span className="score__sub" style={{ fontWeight: 400 }}>
                               {' '}
-                              · you
+                              · jij
                             </span>
                           )}
                         </span>
                         <span className="score__sub" style={{ display: 'block' }}>
-                          {row.completed} {row.completed === 1 ? 'chore' : 'chores'}
+                          {row.completed} {row.completed === 1 ? 'taak' : 'taken'}
                         </span>
                       </span>
                     </span>
@@ -165,7 +170,7 @@ export function Leaderboard() {
                     <span
                       className="score__bar"
                       role="img"
-                      aria-label={`${row.points} of ${max} points`}
+                      aria-label={`${row.points} van ${max} punten`}
                     >
                       <span style={{ width: `${(row.points / max) * 100}%` }} />
                     </span>
@@ -184,7 +189,7 @@ export function Leaderboard() {
                 color: 'var(--text-muted)',
               }}
             >
-              {total} points across the household this month
+              {total} punten in totaal deze maand
             </p>
           </>
         )}

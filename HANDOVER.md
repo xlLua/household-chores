@@ -107,35 +107,36 @@ opens without signal, but completing a chore needs connectivity.
 
 ## 4. Known bugs and test state
 
-### Confirmed bug, not fixed
+### Changed after the first run (2026-10-10)
 
-**Undoing a completion-anchored chore leaves two open instances.**
-`completeInstance()` calls `ensureInstances()` on completion-anchored chores, which
-creates the next occurrence. `uncompleteInstance()` only reverts the original row, so
-both the reverted instance and the newly-generated one sit open and the chore appears
-twice on Today. Calendar-anchored chores are unaffected.
-*Fix:* in `uncompleteInstance`, for a completion-anchored chore also delete the
-future open instance that was auto-created. Needs the chore's anchor, which that
-function doesn't currently receive. `src/lib/chores.ts`.
+**One open instance per chore.** The generator used to materialise 14 days ahead,
+so a weekly chore showed up two or three times under "Binnenkort". Now every chore,
+calendar- or completion-anchored, has exactly one open instance; the next one is
+created when the current one is done or skipped. Missed calendar occurrences
+collapse into the most recent one instead of piling up. `ensureInstances()` trims
+any surplus open rows (left by the old generator, or by two phones racing) down to
+the earliest. `fetchBoard()` now loads all open instances regardless of date, since
+a monthly chore's next instance can be a month out.
 
-### Fixed during the session, worth knowing about
+**Undo bug fixed.** `uncompleteInstance()` now takes the instance and deletes the
+other open instance of that chore, which completing it had generated.
+
+**UI is in Dutch**, with plain wording (no "ledger"/"atelier" flavour text). Dates use
+the `nl` date-fns locale. The app is still named Atelier.
+
+### Fixed earlier, worth knowing about
 
 **Monthly drift.** Stepping a cursor one occurrence at a time made a chore due on the
 31st clamp to Feb 28 and then stay on the 28th forever. Now computed as offsets from
-`start_date`. Verified: `Jan 31 → Feb 28 → Mar 31 → Apr 30 → May 31`.
+`start_date`. Verified: `Jan 31 → Feb 28 → Mar 31 → Apr 30`.
 
 ### Test state
 
-`node scripts/recurrence-check.mjs` — **13 scenarios, all passing.**
+`npm test` runs `scripts/recurrence.test.mjs` with `node:test`. It imports the real
+`src/lib/recurrence.ts` (Node 26 strips the types), so it tests the shipped
+generator, not a port. 18 tests, all passing. `typecheck` and `build` are green.
 
-Read the header of that file before trusting it. It is a hand-written *port* of
-`missingDueDates()` into plain JS, written because npm was missing and the real module
-couldn't be imported (it needs date-fns). It is a second implementation and can drift
-from the real one. It has earned its keep once — the port/real mismatch on
-`addMonths` is exactly what exposed the monthly-drift bug — but a passing run is
-evidence about the algorithm, not the shipped code.
-
-**There are no real tests, no test runner, and no CI.**
+No component tests and no CI.
 
 ### Expected-but-unknown problems
 
@@ -181,8 +182,8 @@ npm run dev                        # http://localhost:5173
 npm run build
 npm run preview
 
-# 5. the algorithm check (see §4 for what it does and doesn't prove)
-node scripts/recurrence-check.mjs
+# 5. generator tests
+npm test
 
 # 6. deploy
 npx vercel                         # then: npx vercel --prod
