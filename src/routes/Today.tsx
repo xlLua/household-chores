@@ -6,6 +6,7 @@ import {
   bucketOf,
   checkLeader,
   completeInstance,
+  isPersonal,
   pointsLabel,
   uncompleteInstance,
 } from '../lib/chores'
@@ -56,6 +57,8 @@ export function Today() {
       if (raced) {
         setStamping(null)
         setToast('Iemand anders was je voor.')
+      } else if (isPersonal(instance.chore)) {
+        setToast('Gedaan.')
       } else {
         setToast(`+${pointsLabel(instance.chore.points)}`)
         checkLeader()
@@ -75,7 +78,7 @@ export function Today() {
     setBusy(instance.id)
     try {
       await uncompleteInstance(instance)
-      checkLeader(true)
+      if (!isPersonal(instance.chore)) checkLeader(true)
       await reload()
     } catch (e) {
       console.error(e)

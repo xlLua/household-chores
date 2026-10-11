@@ -175,7 +175,10 @@ export async function createChore(draft: ChoreDraft): Promise<Chore> {
 }
 
 export async function updateChore(id: string, patch: Partial<ChoreDraft>): Promise<void> {
-  const { error } = await supabase.from('chores').update(patch).eq('id', id)
+  // Whether a chore is personal is fixed at creation (the column isn't
+  // updatable), so never send it along.
+  const { owner_id: _owner, ...rest } = patch
+  const { error } = await supabase.from('chores').update(rest).eq('id', id)
   if (error) throw error
   // Regenerate the open instance so a changed schedule takes effect now
   // rather than after the next completion.
@@ -261,8 +264,10 @@ export async function fetchScores(monthStart: Date): Promise<Score[]> {
 
   const { data, error } = await supabase
     .from('chore_instances')
-    .select('completed_by, chore:chores(points)')
+    .select('completed_by, chore:chores!inner(points)')
     .eq('status', 'done')
+    // Personal chores award no points.
+    .is('chore.owner_id', null)
     .gte('completed_at', start.toISOString())
     .lt('completed_at', end.toISOString())
   if (error) throw error
@@ -286,6 +291,9 @@ export async function fetchScores(monthStart: Date): Promise<Score[]> {
 // --- helpers used by the UI ------------------------------------------------
 
 export const pointsLabel = (n: number) => (n === 1 ? '1 punt' : `${n} punten`)
+
+/** Personal chores only show up for their owner and award no points. */
+export const isPersonal = (chore: Chore) => chore.owner_id !== null
 
 export type DueBucket = 'overdue' | 'today' | 'upcoming'
 

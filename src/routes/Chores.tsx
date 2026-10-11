@@ -4,6 +4,7 @@ import { useBoardContext } from '../hooks/BoardProvider'
 import {
   archiveChore,
   createChore,
+  isPersonal,
   pointsLabel,
   unarchiveChore,
   updateChore,
@@ -138,7 +139,11 @@ export function Chores() {
                     <p className="card__meta">
                       <span>{recurrenceLabel(chore)}</span>
                       <span className="sep" aria-hidden="true">·</span>
-                      <span className="points">{pointsLabel(chore.points)}</span>
+                      {isPersonal(chore) ? (
+                        <span>Persoonlijk</span>
+                      ) : (
+                        <span className="points">{pointsLabel(chore.points)}</span>
+                      )}
                     </p>
                   </div>
                   <div style={{ display: 'flex', gap: '0.35rem' }}>

@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Glyph, GLYPH_NAMES } from './glyphs'
 import { toISO } from '../lib/recurrence'
+import { useAuth } from '../lib/auth'
 import type { Chore, ChoreDraft, GlyphName, RecurrenceAnchor, RecurrenceKind } from '../lib/types'
 
 /** Repeat options as shown; the monthly ones differ only in interval, which
@@ -35,6 +36,7 @@ function emptyDraft(): ChoreDraft {
     recurrence_interval: 1,
     recurrence_anchor: 'calendar',
     start_date: toISO(new Date()),
+    owner_id: null,
   }
 }
 
@@ -58,10 +60,13 @@ export function ChoreForm({
           recurrence_interval: initial.recurrence_interval,
           recurrence_anchor: initial.recurrence_anchor,
           start_date: initial.start_date,
+          owner_id: initial.owner_id,
         }
       : emptyDraft(),
   )
   const [saving, setSaving] = useState(false)
+  const { session } = useAuth()
+  const personal = draft.owner_id !== null
 
   const set = <K extends keyof ChoreDraft>(key: K, value: ChoreDraft[K]) =>
     setDraft((d) => ({ ...d, [key]: value }))
@@ -137,18 +142,20 @@ export function ChoreForm({
           </select>
         </label>
 
-        <label className="field">
-          <span className="label">Punten</span>
-          <input
-            className="input"
-            type="number"
-            inputMode="numeric"
-            min={1}
-            max={100}
-            value={draft.points}
-            onChange={(e) => set('points', Math.max(1, Number(e.target.value) || 1))}
-          />
-        </label>
+        {!personal && (
+          <label className="field">
+            <span className="label">Punten</span>
+            <input
+              className="input"
+              type="number"
+              inputMode="numeric"
+              min={1}
+              max={100}
+              value={draft.points}
+              onChange={(e) => set('points', Math.max(1, Number(e.target.value) || 1))}
+            />
+          </label>
+        )}
       </div>
 
       {draft.recurrence_kind === 'every_n_days' && (
@@ -217,6 +224,28 @@ export function ChoreForm({
           maxLength={280}
         />
       </label>
+
+      {/* Fixed once the chore exists (the column isn't updatable), so the
+          choice is only offered when creating. */}
+      {initial ? (
+        personal && (
+          <p className="card__notes">Persoonlijke taak — alleen jij ziet hem, zonder punten.</p>
+        )
+      ) : (
+        <label className="checkbox">
+          <input
+            type="checkbox"
+            checked={personal}
+            onChange={(e) => set('owner_id', e.target.checked ? (session?.user.id ?? null) : null)}
+          />
+          <span>
+            Persoonlijke taak
+            <span className="card__notes" style={{ display: 'block', marginTop: '0.1rem' }}>
+              Alleen jij ziet deze taak, en afvinken levert geen punten op.
+            </span>
+          </span>
+        </label>
+      )}
 
       <div className="row" style={{ marginTop: '0.25rem' }}>
         <button type="button" className="btn btn--ghost" onClick={onCancel}>

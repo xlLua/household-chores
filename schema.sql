@@ -54,6 +54,19 @@ create table if not exists chores (
   created_at          timestamptz not null default now()
 );
 
+-- Personal chores (added 2026-10-11): owner_id set = only that person sees
+-- the chore and its occurrences, and completing it awards no points. Null =
+-- shared with the household, as before. Chosen when the chore is created and
+-- never changed afterwards (see the grants below), so a shared chore's
+-- completion history can't vanish from the scoreboard by turning it personal.
+alter table chores
+  add column if not exists owner_id uuid references profiles (user_id) on delete cascade;
+create index if not exists chores_owner_idx on chores (owner_id);
+
+revoke update on chores from anon, authenticated;
+grant update (title, notes, points, glyph, recurrence_kind, recurrence_interval,
+              recurrence_anchor, start_date, archived_at) on chores to authenticated;
+
 -- One materialized occurrence. The unique constraint is what makes the
 -- client-side generator idempotent and lets it run on every app open.
 create table if not exists chore_instances (
@@ -112,19 +125,27 @@ create policy "household" on profiles
   using ((select public.is_household_member()))
   with check ((select public.is_household_member()));
 
+-- Shared chores for everyone in the household; personal ones only for their owner.
 drop policy if exists "signed in" on chores;
 drop policy if exists "household" on chores;
 create policy "household" on chores
   for all to authenticated
-  using ((select public.is_household_member()))
-  with check ((select public.is_household_member()));
+  using ((select public.is_household_member())
+         and (owner_id is null or owner_id = (select auth.uid())))
+  with check ((select public.is_household_member())
+              and (owner_id is null or owner_id = (select auth.uid())));
 
+-- An occurrence is visible exactly when its chore is.
 drop policy if exists "signed in" on chore_instances;
 drop policy if exists "household" on chore_instances;
 create policy "household" on chore_instances
   for all to authenticated
-  using ((select public.is_household_member()))
-  with check ((select public.is_household_member()));
+  using ((select public.is_household_member()) and exists (
+    select 1 from chores c
+    where c.id = chore_id and (c.owner_id is null or c.owner_id = (select auth.uid()))))
+  with check ((select public.is_household_member()) and exists (
+    select 1 from chores c
+    where c.id = chore_id and (c.owner_id is null or c.owner_id = (select auth.uid()))));
 
 -- ---------------------------------------------------------------------------
 -- Realtime. Without this the tables emit no change events and phones only

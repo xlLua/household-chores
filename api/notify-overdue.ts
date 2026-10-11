@@ -38,6 +38,8 @@ export async function GET(request: Request): Promise<Response> {
     .eq('status', 'open')
     .lt('due_date', today)
     .is('chore.archived_at', null)
+    // Personal chores are nobody else's business.
+    .is('chore.owner_id', null)
     .order('due_date', { ascending: true })
   if (overdueError) throw overdueError
   const overdue = (overdueRows ?? []) as unknown as Array<{

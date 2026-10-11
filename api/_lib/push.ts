@@ -43,8 +43,10 @@ export async function monthStandings(db: SupabaseClient, month: string): Promise
       db.from('profiles').select('user_id, display_name'),
       db
         .from('chore_instances')
-        .select('completed_by, completed_at, chore:chores(points)')
+        .select('completed_by, completed_at, chore:chores!inner(points)')
         .eq('status', 'done')
+        // Personal chores award no points.
+        .is('chore.owner_id', null)
         // Generous window, then filtered to the month in local time below.
         .gte('completed_at', new Date(Date.now() - 40 * 86_400_000).toISOString()),
     ])

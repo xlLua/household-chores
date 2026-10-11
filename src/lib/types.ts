@@ -35,6 +35,9 @@ export interface Chore {
   recurrence_anchor: RecurrenceAnchor
   /** ISO date, 'yyyy-MM-dd'. Seeds the schedule. */
   start_date: string
+  /** Set = a personal chore: only this person sees it, and it awards no
+   *  points. Null = shared with the household. Fixed at creation. */
+  owner_id: string | null
   archived_at: string | null
   created_at: string
 }

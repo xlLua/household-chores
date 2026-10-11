@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { format, isToday, isYesterday, parseISO } from 'date-fns'
 import { nl } from 'date-fns/locale'
 import { useBoardContext } from '../hooks/BoardProvider'
-import { fetchHistory, pointsLabel } from '../lib/chores'
+import { fetchHistory, isPersonal, pointsLabel } from '../lib/chores'
 import { Empty } from '../components/Empty'
 import { Glyph } from '../components/glyphs'
 import { Avatar } from '../components/Avatar'
@@ -100,7 +100,11 @@ export function History() {
                         <span className="sep" aria-hidden="true">·</span>
                         <span>{format(parseISO(item.completed_at!), 'HH:mm')}</span>
                         <span className="sep" aria-hidden="true">·</span>
-                        <span className="points">{pointsLabel(item.chore.points)}</span>
+                        {isPersonal(item.chore) ? (
+                          <span>Persoonlijk</span>
+                        ) : (
+                          <span className="points">{pointsLabel(item.chore.points)}</span>
+                        )}
                       </p>
                     </div>
                   </li>

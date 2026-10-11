@@ -4,7 +4,7 @@ import { Check, Undo2 } from 'lucide-react'
 import { Glyph } from './glyphs'
 import { Sigil } from './Sigil'
 import { Avatar } from './Avatar'
-import { bucketOf, pointsLabel } from '../lib/chores'
+import { bucketOf, isPersonal, pointsLabel } from '../lib/chores'
 import type { InstanceWithChore, Profile } from '../lib/types'
 import { recurrenceLabel } from '../lib/recurrence'
 
@@ -80,7 +80,11 @@ export function ChoreCard({
             </>
           )}
           <span className="sep" aria-hidden="true">·</span>
-          <span className="points">{pointsLabel(instance.chore.points)}</span>
+          {isPersonal(instance.chore) ? (
+            <span>Persoonlijk</span>
+          ) : (
+            <span className="points">{pointsLabel(instance.chore.points)}</span>
+          )}
         </p>
         {instance.chore.notes && !done && (
           <p className="card__notes">{instance.chore.notes}</p>
